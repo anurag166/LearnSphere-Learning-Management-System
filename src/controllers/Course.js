@@ -50,8 +50,31 @@ export const createCourse = async (req , res)=>{
             
 
         })
+
+        //add the  new course to the user schema of instructor
+
+        await User.findByIdAndUpdate(
+            {
+                _id: instructorDetails._id
+            },
+            {
+             $push: {
+                courses: newCourse._id,
+                
+             }
+            },
+             {new: true},
+            
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Course",
+            data: newCourse,
+        });
     } catch (error) {
-        
+        console.log(error);
+        throw new ApiError(500,"failed to create Course");
     }
 }
 
@@ -60,3 +83,25 @@ export const createCourse = async (req , res)=>{
 
 
 //get all courses
+
+export const showAllCourses = async (req , res)=>{
+    try {
+        const allCourses =  await course.find({},{
+            courseName: true,
+            price: true,
+            thumbnail: true,
+            instructor: true,
+            ratingsAndReviews: true,
+            studentsEnrolled: true,
+        }).populate("instructor")
+        .exec();
+        return res.status(200).json({
+            success: true,
+            message: 'Data for all courses fetched successfully',
+            data: allCourses
+        })
+    } catch (error) {
+        console.log(error);
+        throw new ApiError(500,"cannot get course data");
+    }
+}
