@@ -1,0 +1,230 @@
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 120px 5% 80px;
+  position: relative;
+  overflow: hidden;
+}
+.heroBg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 30%, rgba(124,92,252,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(20,184,166,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(124,92,252,0.12);
+  border: 1px solid rgba(124,92,252,0.25);
+  color: var(--accent3);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+.heroBadge::before { content: "✦"; font-size: 0.7rem; }
+.heroH1 {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.8rem,5vw,4.2rem);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+.heroH1 em { font-style: italic; color: var(--accent2); }
+.heroSub {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 36px;
+}
+.heroActions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.btnHero {
+  background: var(--accent);
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-decoration: none;
+  display: inline-block;
+}
+.btnHero:hover {
+  background: #6d4eea;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(124,92,252,0.4);
+}
+.btnOutline {
+  background: transparent;
+  color: var(--text);
+  padding: 13px 28px;
+  border-radius: 10px;
+  font-size: 1rem;
+  border: 1px solid var(--border2);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.btnOutline:hover { border-color: var(--accent); color: var(--accent3); }
+.heroStats { display: flex; gap: 40px; margin-top: 44px; }
+.statNum { font-family: "Playfair Display", serif; font-size: 2rem; font-weight: 700; }
+.statLbl { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+
+/* Hero visual */
+.heroVisual { position: relative; }
+.heroCardMain {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 28px;
+}
+.coursePreviewImg {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+.coursePreviewTitle { font-weight: 600; font-size: 1rem; margin-bottom: 6px; }
+.coursePreviewMeta { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 0.82rem; }
+.rating { color: var(--gold); }
+.enrollBadge {
+  margin-top: 16px;
+  background: rgba(124,92,252,0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--accent3);
+}
+.badgeFloat {
+  position: absolute;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 12px 18px;
+}
+.topRight { top: -20px; right: -20px; }
+.bottomLeft { bottom: -20px; left: -20px; }
+.bfNum { font-family: "Playfair Display", serif; font-size: 1.5rem; font-weight: 700; }
+.bfLbl { font-size: 0.75rem; color: var(--muted); }
+
+/* Sections */
+.sectionInner { max-width: 1200px; margin: 0 auto; }
+.sectionTag { color: var(--accent2); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.sectionTitle { font-family: "Playfair Display", serif; font-size: clamp(2rem,3.5vw,2.8rem); font-weight: 700; margin-bottom: 16px; }
+.sectionRow { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.viewAll { color: var(--accent2); font-size: 0.9rem; text-decoration: none; }
+.viewAll:hover { text-decoration: underline; }
+
+/* Categories */
+.categoriesSection { background: var(--bg2); padding: 80px 5%; }
+.catsGrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 16px; margin-top: 48px; }
+.catCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+}
+.catCard:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 30px rgba(124,92,252,0.15); }
+.catIcon { font-size: 2rem; margin-bottom: 12px; display: block; }
+.catName { font-weight: 500; font-size: 0.9rem; }
+
+/* Courses */
+.coursesGrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 24px; margin-top: 48px; }
+.courseCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.25s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.courseCard:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+.courseThumb { width: 100%; height: 170px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+.courseBody { padding: 20px; }
+.courseCat { color: var(--accent2); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.courseTitle { font-weight: 600; font-size: 1rem; line-height: 1.4; margin-bottom: 10px; }
+.courseInstructor { color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; }
+.courseFooter { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 14px; }
+.coursePrice { font-family: "Playfair Display", serif; font-size: 1.25rem; font-weight: 700; color: var(--accent2); }
+.courseEnrolled { color: var(--muted); font-size: 0.78rem; }
+
+/* How */
+.howGrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; margin-top: 56px; }
+.howStep {
+  position: relative;
+  padding: 32px 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+.howStep::before {
+  content: attr(data-step);
+  position: absolute;
+  top: -16px; left: 28px;
+  background: var(--accent);
+  color: #fff;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.howStep h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; margin-top: 8px; }
+.howStep p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+/* Testimonials */
+.testiGrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap: 24px; margin-top: 48px; }
+.testiCard { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 28px; }
+.stars { color: var(--gold); font-size: 0.82rem; margin-bottom: 12px; }
+.testiText { color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+.testiAuthor { display: flex; align-items: center; gap: 12px; }
+.testiAvatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; }
+.testiName { font-weight: 500; font-size: 0.9rem; }
+.testiRole { color: var(--muted); font-size: 0.78rem; }
+
+/* CTA */
+.ctaSection {
+  background: linear-gradient(135deg,rgba(124,92,252,0.15) 0%,rgba(20,184,166,0.08) 100%);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 80px 5%;
+}
+.ctaInner { text-align: center; max-width: 700px; margin: 0 auto; }
+.ctaInner h2 { font-family: "Playfair Display", serif; font-size: clamp(2rem,4vw,3rem); font-weight: 700; margin-bottom: 16px; }
+.ctaInner p { color: var(--muted); font-size: 1.05rem; margin-bottom: 36px; }
+
+@media (max-width: 900px) {
+  .heroGrid, .howGrid { grid-template-columns: 1fr; }
+  .heroVisual { display: none; }
+}
