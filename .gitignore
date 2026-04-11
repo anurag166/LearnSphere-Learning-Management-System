@@ -1,0 +1,7 @@
+node_modules/
+dist/
+server/node_modules/
+server/.env
+.env
+backend.zip
+*.zip

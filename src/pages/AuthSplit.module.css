@@ -1,0 +1,273 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* LEFT PANEL */
+.leftPanel {
+  flex: 1;
+  background: linear-gradient(145deg,#0d0b1e,#1a0e3d,#0d1f2d);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
+.leftPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 40% 40%, rgba(124,92,252,0.2) 0%, transparent 70%);
+}
+.panelContent {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+}
+.panelContent .logo { margin-bottom: 48px; display: block; font-size: 2rem; }
+.panelTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+.panelTitle em { font-style: italic; color: #a78bfa; }
+.panelSub {
+  color: rgba(255,255,255,0.55);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+.featureList { list-style: none; }
+.featureList li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+.featureList li::before {
+  content: "✓";
+  background: rgba(124,92,252,0.3);
+  color: #a78bfa;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Role cards (signup) */
+.roleCards { display: flex; gap: 16px; }
+.roleCard {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+}
+.roleCard .ri { font-size: 1.8rem; margin-bottom: 10px; display: block; }
+.roleCard h4 { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 6px; }
+.roleCard p { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
+
+/* RIGHT PANEL */
+.rightPanel {
+  width: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: var(--bg);
+  overflow-y: auto;
+}
+.formBox { width: 100%; max-width: 420px; }
+.formHeader { margin-bottom: 36px; }
+.formHeader h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.formHeader p { color: var(--muted); font-size: 0.9rem; }
+.formHeader a { color: var(--accent2); text-decoration: none; }
+
+/* Password field */
+.passwordWrap { position: relative; }
+.passwordWrap input { padding-right: 48px; }
+.togglePw {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  font-size: 1rem; padding: 4px;
+}
+
+.forgot { text-align: right; margin-top: -8px; margin-bottom: 20px; }
+.forgot a { color: var(--accent2); text-decoration: none; font-size: 0.82rem; }
+
+.btnSubmit {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 50px;
+}
+.btnSubmit:hover:not(:disabled) {
+  background: #6d4eea;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(124,92,252,0.35);
+}
+.btnSubmit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  animation: bounce 1.2s infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%,60%,100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+}
+
+/* Steps progress (signup) */
+.steps {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+}
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.stepCircle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 2px solid var(--border2);
+  color: var(--muted);
+  transition: all 0.3s;
+}
+.stepCircle.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.stepCircle.done { border-color: var(--accent); background: rgba(124,92,252,0.15); color: var(--accent2); }
+.stepLabel { font-size: 0.72rem; color: var(--muted); }
+.stepLabel.active { color: var(--accent3); }
+.stepLine { flex: 1; height: 1px; background: var(--border2); margin-top: -20px; }
+
+/* Role selector */
+.roleSelect { display: flex; gap: 12px; margin-bottom: 18px; }
+.roleBtn {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  text-align: center;
+}
+.roleBtn.selected { border-color: var(--accent); background: rgba(124,92,252,0.1); color: var(--accent3); }
+.roleBtn .re { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+
+/* OTP */
+.otpRow { display: flex; gap: 10px; align-items: flex-end; }
+.otpRow input { flex: 1; }
+.btnSendOtp {
+  background: rgba(124,92,252,0.15);
+  border: 1px solid rgba(124,92,252,0.3);
+  color: var(--accent3);
+  padding: 13px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.btnSendOtp:hover:not(:disabled) { background: rgba(124,92,252,0.25); }
+.btnSendOtp:disabled { opacity: 0.5; cursor: not-allowed; }
+.otpInputs { display: flex; gap: 10px; justify-content: center; margin-top: 8px; }
+.otpDigit {
+  width: 48px; height: 52px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  background: var(--card);
+  border: 1.5px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  outline: none;
+  transition: all 0.2s;
+}
+.otpDigit:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,92,252,0.15); }
+
+.btnBack {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  padding: 13px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.btnBack:hover { color: var(--text); }
+
+.formRow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+@media (max-width: 900px) {
+  .leftPanel { display: none; }
+  .rightPanel { width: 100%; padding: 32px 24px; }
+}
