@@ -1,0 +1,109 @@
+.sidebar {
+  width: 260px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.logoWrap {
+  padding: 0 24px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.roleBadge {
+  display: inline-block;
+  background: rgba(124,92,252,0.15);
+  color: var(--accent3);
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 100px;
+  margin-top: 6px;
+}
+
+.nav {
+  padding: 0 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionLabel {
+  color: var(--dim);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0 12px;
+  margin-bottom: 8px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.875rem;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 2px;
+}
+.navItem:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+.navItem.active {
+  background: rgba(124,92,252,0.12);
+  color: var(--accent3);
+}
+
+.icon { width: 18px; text-align: center; }
+
+.bottom {
+  margin-top: auto;
+  padding: 20px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.userName { font-size: 0.875rem; font-weight: 500; }
+.userRole { font-size: 0.72rem; color: var(--muted); }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+}

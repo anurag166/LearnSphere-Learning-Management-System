@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="StudyNotion">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#22c55e" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#g)" />
+  <path d="M17 24c0-3 2.6-5 5.6-5 4.2 0 7.8 2.2 9.4 3.4 1.6-1.2 5.2-3.4 9.4-3.4 3 0 5.6 2 5.6 5v19c-2.8-1.9-6-3-9.8-3-3.4 0-6.7 1.1-9.2 2.8-2.5-1.7-5.8-2.8-9.2-2.8-3.8 0-7 1.1-9.8 3V24z" fill="#ffffff"/>
+</svg>

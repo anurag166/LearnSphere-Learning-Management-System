@@ -1,0 +1,41 @@
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 18px 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(20px);
+  background: rgba(10,10,15,0.85);
+  border-bottom: 1px solid var(--border);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.navLinks a {
+  color: var(--muted);
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+.navLinks a:hover { color: var(--text); }
+
+.navCta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.greeting {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .navLinks { display: none; }
+}
