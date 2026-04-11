@@ -1,0 +1,98 @@
+.courseHero {
+  background: linear-gradient(to bottom, var(--bg2), var(--bg));
+  padding: 100px 5% 0;
+  border-bottom: 1px solid var(--border);
+}
+.heroInner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 380px;
+  gap: 60px; align-items: start;
+}
+.heroLeft { padding-bottom: 48px; }
+.breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+.breadcrumb a { color: var(--accent2); text-decoration: none; }
+.heroBadge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(124,92,252,0.12); color: var(--accent3);
+  font-size: 0.75rem; font-weight: 600;
+  padding: 4px 12px; border-radius: 100px; margin-bottom: 16px;
+}
+.courseTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 2.4rem; font-weight: 700; line-height: 1.2; margin-bottom: 16px;
+}
+.courseDesc { color: var(--muted); font-size: 1rem; line-height: 1.7; margin-bottom: 24px; }
+.metaRow { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
+.metaItem { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--muted); }
+.ratingStars { color: var(--gold); }
+.instructorChip {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 100px; padding: 6px 14px 6px 8px;
+}
+.icAvatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 600;
+}
+.icName { font-size: 0.82rem; font-weight: 500; }
+
+/* Purchase card */
+.purchaseCard {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 28px;
+  position: sticky; top: 80px;
+}
+.courseThumbBig {
+  width: 100%; height: 200px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 4rem;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg,#1e1b4b,#4c1d95);
+}
+.priceDisplay { display: flex; align-items: baseline; gap: 10px; margin-bottom: 20px; }
+.priceMain { font-family: "Playfair Display", serif; font-size: 2.2rem; font-weight: 700; color: var(--accent2); }
+.priceOrig { color: var(--muted); font-size: 1rem; text-decoration: line-through; }
+.discountBadge { background: rgba(34,197,94,0.12); color: var(--green); font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+.btnEnrollBig {
+  width: 100%; background: var(--accent); color: #fff;
+  padding: 15px; border-radius: 12px; font-family: "DM Sans", sans-serif;
+  font-size: 1rem; font-weight: 600; border: none; cursor: pointer;
+  transition: all 0.25s; margin-bottom: 12px;
+}
+.btnEnrollBig:hover { background: #6d4eea; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(124,92,252,0.4); }
+.courseIncludes { list-style: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+.courseIncludes li { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--muted); margin-bottom: 10px; }
+.courseIncludes li::before { content: "✓"; color: var(--green); font-weight: 700; }
+
+/* Content */
+.courseContent { max-width: 800px; margin: 60px auto; padding: 0 5%; }
+.contentLeft {}
+.learnsBox { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 32px; }
+.learnsBox h2, .curriculumSection h2, .reviewsSection h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 18px; }
+.learnsGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.learnItem { display: flex; align-items: flex-start; gap: 10px; font-size: 0.875rem; color: var(--muted); }
+.learnItem::before { content: "✦"; color: var(--accent2); font-size: 0.7rem; margin-top: 3px; flex-shrink: 0; }
+.curriculumSection { margin-bottom: 32px; }
+.sectionItem { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.sectionHeader { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+.sectionTitle { font-weight: 500; font-size: 0.9rem; }
+.sectionMeta { color: var(--muted); font-size: 0.78rem; }
+.reviewsSection { margin-top: 40px; }
+.reviewForm { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+.reviewForm h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 16px; }
+.starsInput { display: flex; gap: 6px; margin-bottom: 14px; }
+.starBtn { font-size: 1.5rem; background: none; border: none; cursor: pointer; opacity: 0.3; transition: opacity 0.15s; }
+.activeStar { opacity: 1; }
+.btnReview { background: var(--accent); color: #fff; padding: 9px 20px; border-radius: 8px; font-family: "DM Sans", sans-serif; font-size: 0.85rem; font-weight: 500; border: none; cursor: pointer; transition: all 0.2s; }
+.reviewsList { display: flex; flex-direction: column; gap: 16px; }
+.reviewItem { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+.riHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.riUser { display: flex; align-items: center; gap: 10px; }
+.riAvatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+.riName { font-size: 0.875rem; font-weight: 500; }
+.riStars { color: var(--gold); font-size: 0.82rem; }
+
+@media (max-width: 900px) {
+  .heroInner { grid-template-columns: 1fr; }
+  .purchaseCard { position: static; }
+}

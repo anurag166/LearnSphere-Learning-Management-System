@@ -1,0 +1,118 @@
+.main { max-width: 1300px; margin: 0 auto; padding: 100px 5% 60px; }
+
+.pageHeader { margin-bottom: 40px; }
+.pageHeader h1 { font-family: "Playfair Display", serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; }
+.pageHeader p { color: var(--muted); font-size: 1rem; }
+
+.toolbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
+
+.searchWrap { flex: 1; min-width: 260px; position: relative; }
+.searchWrap::before { content: "🔍"; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; }
+.searchWrap input {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 11px 16px 11px 42px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s;
+}
+.searchWrap input:focus { border-color: var(--accent); }
+.searchWrap input::placeholder { color: var(--muted); }
+
+.filterBtns { display: flex; gap: 8px; flex-wrap: wrap; }
+.filterBtn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.2s;
+}
+.filterBtn:hover, .filterBtn.active {
+  border-color: var(--accent);
+  color: var(--accent3);
+  background: rgba(124,92,252,0.1);
+}
+
+.sortSel {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+}
+.sortSel option { background: #1a1a26; }
+
+.resultsMeta { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+
+.emptyState { text-align: center; padding: 80px 40px; color: var(--muted); }
+.emptyIcon { font-size: 3rem; margin-bottom: 16px; }
+
+.coursesGrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 24px; }
+
+.courseCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.25s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.courseCard:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+
+.courseThumb { width: 100%; height: 175px; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+
+.courseBody { padding: 20px; }
+.courseCatBadge {
+  display: inline-block;
+  background: rgba(124,92,252,0.12);
+  color: var(--accent3);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+}
+.courseTitle { font-weight: 600; font-size: 1rem; line-height: 1.4; margin-bottom: 8px; }
+.courseInstructor { color: var(--muted); font-size: 0.82rem; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.instructorAvatar {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.courseStats { display: flex; gap: 14px; margin-bottom: 14px; }
+.cs { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 0.78rem; }
+.courseFooter { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 14px; }
+.coursePrice { font-family: "Playfair Display", serif; font-size: 1.3rem; font-weight: 700; color: var(--accent2); }
+.btnEnroll {
+  background: rgba(124,92,252,0.15);
+  color: var(--accent3);
+  border: 1px solid rgba(124,92,252,0.25);
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btnEnroll:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
