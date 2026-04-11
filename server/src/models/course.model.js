@@ -1,4 +1,5 @@
 import mongoose,{Schema} from 'mongoose'
+import { category } from './category.model.js'
 
 const courseSchema = new Schema({
     courseName: {
@@ -9,7 +10,7 @@ const courseSchema = new Schema({
         type: String,
         required: true,
     },
-    instrutor: {
+    instructor: {
         type:  mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -32,9 +33,9 @@ const courseSchema = new Schema({
     thumbnail: {
         type: String,
     },
-    tag: {
+    category: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'tags'
+        ref: 'category'
     },
     studentEnrolled:[ {
         type: mongoose.Schema.Types.ObjectId,
@@ -46,4 +47,4 @@ const courseSchema = new Schema({
 
 })
 
-export const course= mongoose.model(course,"courseSchema")
+export const course= mongoose.model("course",courseSchema)

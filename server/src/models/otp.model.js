@@ -7,7 +7,7 @@ const otpSchema = new Schema({
         required: true,
     },
     otp: {
-        type: Number,
+        type: String,
         required: true,
     },
     createdAt: {
@@ -23,7 +23,8 @@ async function sendVerificationMail(email,otp){
         console.log("email sent successfully")
 
     } catch (error) {
-        throw new ApiError(500,"error occured while sending mail")
+        console.error("REAL MAIL ERROR ", error);
+        throw new ApiError(500,error.message)
     }
 }
 
@@ -31,4 +32,4 @@ otpSchema.pre("save",async function (next) {
     await sendVerificationMail(this.email,this.otp);
     next();
 })
-export const otp= mongoose.model(otp,"otpSchema")
+export const otp= mongoose.model("otp",otpSchema)

@@ -21,12 +21,15 @@ const userSchema = new Schema ({
         type: String,
         required: [true,'Password is required']
     },
+    confirmPassword:{
+        type: String,
+    },
     accountType: {
         type: String,
         required: true,
-        enum: ['student','instructor','admin']
+        enum: ['Student','Instructor','Admin']
     },
-    additionDetails:{
+    additionalDetails:{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: "profile"
@@ -42,9 +45,13 @@ const userSchema = new Schema ({
     profileImage: {
         type: String,
         required: true
-    }
-
-
+    },
+    resetPasswordToken: {
+    type: String,
+},
+resetPasswordExpires: {
+    type: Date,
+},
 })
 
 export const User= mongoose.model("User",userSchema)

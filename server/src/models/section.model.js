@@ -1,5 +1,5 @@
 import mongoose,{Schema} from 'mongoose'
-import { subSection } from './subSection.model'
+import { subSection } from './subSection.model.js'
 
 const SectionSchema = new Schema({
     sectionName: {
@@ -14,4 +14,4 @@ const SectionSchema = new Schema({
     ]
 })
 
-export const Section= mongoose.model(Section,"SectionSchema")
+export const Section= mongoose.model("Section",SectionSchema)
