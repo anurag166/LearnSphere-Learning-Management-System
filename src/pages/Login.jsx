@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiConnector } from "../services/apiConnector";
-import { authEndpoints } from "../services/apis";
+import { API_BASE_URL, authEndpoints } from "../services/apis";
 import styles from "./AuthSplit.module.css";
 
 export default function Login() {
@@ -32,7 +32,19 @@ export default function Login() {
       }
     } catch (err) {
       const backendMessage = err?.response?.data?.message;
-      setError(backendMessage || "Login failed. Please check your connection and try again.");
+      const statusCode = err?.response?.status;
+
+      if (backendMessage) {
+        setError(backendMessage);
+      } else if (statusCode) {
+        setError(
+          `Login failed (HTTP ${statusCode}). Verify backend URL and API route: ${API_BASE_URL}/auth/login`
+        );
+      } else {
+        setError(
+          `Network/CORS error: cannot reach ${API_BASE_URL}. Set VITE_API_BASE_URL in Vercel frontend env to your backend /api/v1 URL.`
+        );
+      }
     }
     setLoading(false);
   }

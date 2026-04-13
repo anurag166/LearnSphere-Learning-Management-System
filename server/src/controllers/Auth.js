@@ -171,8 +171,11 @@ export const login = async(req , res)=>{
         }
 
     } catch (error) {
-    console.log("login error")
-    throw new ApiError(500,error.message)
+        console.log("login error")
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Login failed",
+        });
     }
 }
 
