@@ -31,7 +31,8 @@ export default function Login() {
         setError(data.message || "Invalid credentials. Please try again.");
       }
     } catch (err) {
-      setError("Server error. Make sure the backend is running on port 4000.");
+      const backendMessage = err?.response?.data?.message;
+      setError(backendMessage || "Login failed. Please check your connection and try again.");
     }
     setLoading(false);
   }
