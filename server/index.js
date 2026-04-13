@@ -16,12 +16,38 @@ dotenv.config();
 
 const app = express();
 
-const allowedOrigins = new Set([
+const envAllowedOrigins = [
   process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URLS || "").split(","),
+]
+  .map((origin) => origin?.trim())
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
+  ...envAllowedOrigins,
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
 ]);
+
+const allowVercelPreviewOrigins = process.env.ALLOW_VERCEL_PREVIEWS === "true";
+
+const isAllowedOrigin = (origin) => {
+  if (allowedOrigins.has(origin)) {
+    return true;
+  }
+
+  if (allowVercelPreviewOrigins) {
+    try {
+      const { hostname } = new URL(origin);
+      return hostname.endsWith(".vercel.app");
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+};
 
 app.use(
   cors({
@@ -31,7 +57,7 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.has(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
