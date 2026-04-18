@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/common/Sidebar";
 import { API_BASE_URL } from "../services/apis";
+import Profile from "./Profile";
 import styles from "./DashBoard.module.css";
 
 const GRADIENTS = [
@@ -67,11 +68,11 @@ export default function DashBoard() {
     e.preventDefault();
     if (newPw !== confirmPw) { setPwMsg({ type:"error", text:"Passwords do not match." }); return; }
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/changePassword`, {
+      const res = await fetch(`${API_BASE_URL}/auth/changepassword`, {
         method: "POST",
         headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
-        body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw, confirmNewPassword: confirmPw }),
+        body: JSON.stringify({ oldpassword: oldPw, newPassword: newPw, confirmPassword: confirmPw }),
       });
       const data = await res.json();
       setPwMsg(data.success
@@ -164,40 +165,7 @@ export default function DashBoard() {
 
         {/* PROFILE */}
         {activeTab === "profile" && (
-          <div>
-            <div className={styles.dashHeader}><h1>Profile</h1><p>Manage your personal information.</p></div>
-            <div className={styles.twoCol}>
-              <div className={styles.panel}>
-                <div className={styles.profileImgWrap}>{initials}</div>
-                <h3 style={{textAlign:"center",marginTop:12}}>{user?.firstName} {user?.lastName}</h3>
-                <p style={{textAlign:"center",color:"var(--muted)",fontSize:"0.82rem",marginTop:4}}>{user?.accountType}</p>
-              </div>
-              <div className={styles.panel}>
-                <h3>Edit Profile</h3>
-                {profileMsg.text && <div className={`alert alert-${profileMsg.type}`}>{profileMsg.text}</div>}
-                <form onSubmit={saveProfile}>
-                  <div className="form-group"><label>Gender</label>
-                    <select value={profile.gender} onChange={e => setProfile({...profile,gender:e.target.value})}>
-                      <option value="">Select</option>
-                      <option>Male</option><option>Female</option><option>Other</option>
-                    </select>
-                  </div>
-                  <div className="form-group"><label>Date of Birth</label>
-                    <input type="date" value={profile.dob} onChange={e => setProfile({...profile,dob:e.target.value})} />
-                  </div>
-                  <div className="form-group"><label>Contact Number</label>
-                    <input type="text" placeholder="+91 9876543210" value={profile.contactNumber}
-                      onChange={e => setProfile({...profile,contactNumber:e.target.value})} />
-                  </div>
-                  <div className="form-group"><label>About</label>
-                    <textarea placeholder="Tell us a bit about yourself..." value={profile.about}
-                      onChange={e => setProfile({...profile,about:e.target.value})} />
-                  </div>
-                  <button type="submit" className={styles.btnSave}>Save Changes</button>
-                </form>
-              </div>
-            </div>
-          </div>
+          <Profile />
         )}
 
         {/* SECURITY */}
