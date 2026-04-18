@@ -192,21 +192,16 @@ export default function Profile() {
     e.preventDefault();
     setProfileMessage("");
 
-    if (!profileForm.gender || !profileForm.contactNumber) {
-      setProfileMessage("Gender and contact number are required.");
-      return;
-    }
-
     try {
       setProfileLoading(true);
       const res = await apiConnector(
         "PUT",
         profileEndpoints.UPDATE_PROFILE,
         {
-          gender: profileForm.gender,
+          gender: profileForm.gender?.trim(),
           dob: profileForm.dob,
           dateOfBirth: profileForm.dob,
-          contactNumber: profileForm.contactNumber,
+          contactNumber: profileForm.contactNumber?.trim(),
           about: profileForm.about,
         },
         {
@@ -311,7 +306,6 @@ export default function Profile() {
                   <select
                     value={profileForm.gender}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, gender: e.target.value }))}
-                    required
                   >
                     <option value="">Select gender</option>
                     <option value="Male">Male</option>
@@ -336,7 +330,6 @@ export default function Profile() {
                     value={profileForm.contactNumber}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, contactNumber: e.target.value }))}
                     placeholder="Enter phone number"
-                    required
                   />
                 </label>
               </div>

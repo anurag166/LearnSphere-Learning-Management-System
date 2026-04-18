@@ -1,30 +1,26 @@
 import { profile } from "../models/profile.model.js";
 import {User} from "../models/user.model.js";
-import { ApiError } from "../utils/ApiErrors.js";
 import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 
 
 export const updateProfile = async(req , res)=>{
     try {
-        //get data
         const {
-            dateOfBirth = "",
-            dob = "",
-            about = "",
+            dateOfBirth,
+            dob,
+            about,
             contactNumber,
             gender,
-        } = req.body;
+        } = req.body || {};
 
-        //get Userid
-        const userId = req.user.id;
-        //validation
-        if(!contactNumber || !gender || !userId){
+        const userId = req.user?.id || req.user?._id;
+        if(!userId){
             return res.status(400).json({
                 success: false,
-                message: 'all fields are required'
+                message: 'user id is required'
             })
         }
-        //find profile
+
         const userDetails = await User.findById(userId);
         if (!userDetails) {
             return res.status(404).json({
@@ -41,14 +37,29 @@ export const updateProfile = async(req , res)=>{
             })
         }
 
-        const resolvedDob = dob || dateOfBirth;
-        //update profile
-        profileDetails.dob = resolvedDob
-        profileDetails.about=about
-        profileDetails.gender=gender
-        profileDetails.contactNumber=contactNumber
+        const resolvedDob = (dob || dateOfBirth || "").trim();
+        const nextGender = typeof gender === "string" ? gender.trim() : "";
+        const nextContact = typeof contactNumber === "string" ? contactNumber.trim() : "";
+        const nextAbout = typeof about === "string" ? about : undefined;
+
+        if (resolvedDob) {
+            profileDetails.dob = resolvedDob;
+        }
+
+        if (nextGender) {
+            profileDetails.gender = nextGender;
+        }
+
+        if (nextContact) {
+            profileDetails.contactNumber = nextContact;
+        }
+
+        if (typeof nextAbout === "string") {
+            profileDetails.about = nextAbout;
+        }
+
         await profileDetails.save();
-        //return response
+
         return res.status(200).json({
             success: true,
             message: 'profile updated successfully',
