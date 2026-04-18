@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/common/Sidebar";
+import { API_BASE_URL } from "../services/apis";
 import styles from "./DashBoard.module.css";
 
 const GRADIENTS = [
@@ -32,7 +33,7 @@ export default function DashBoard() {
 
   async function loadUserDetails() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/profile/getAllUserDetails", {
+      const res = await fetch(`${API_BASE_URL}/profile/getAllUserDetails`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
@@ -49,7 +50,7 @@ export default function DashBoard() {
     e.preventDefault();
     setProfileMsg({ type:"", text:"" });
     try {
-      const res = await fetch("http://localhost:4000/api/v1/profile/updateProfile", {
+      const res = await fetch(`${API_BASE_URL}/profile/updateProfile`, {
         method: "PUT",
         headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
@@ -66,7 +67,7 @@ export default function DashBoard() {
     e.preventDefault();
     if (newPw !== confirmPw) { setPwMsg({ type:"error", text:"Passwords do not match." }); return; }
     try {
-      const res = await fetch("http://localhost:4000/api/v1/auth/changePassword", {
+      const res = await fetch(`${API_BASE_URL}/auth/changePassword`, {
         method: "POST",
         headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
         credentials: "include",

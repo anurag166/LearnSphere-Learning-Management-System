@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import { API_BASE_URL } from "../services/apis";
 import styles from "./Courses.module.css";
 
 const GRADIENTS = [
@@ -42,7 +43,7 @@ export default function Courses() {
 
   async function loadCourses() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCourses");
+      const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
       const data = await res.json();
       setAllCourses(data.success ? data.data : getDummy());
     } catch { setAllCourses(getDummy()); }
@@ -51,7 +52,7 @@ export default function Courses() {
 
   async function loadCategories() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCategory");
+      const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
       const data = await res.json();
       if (data.success && data.data?.length) setCategories(data.data);
     } catch {}

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import { API_BASE_URL } from "../services/apis";
 import styles from "./CourseDetails.module.css";
 
 export default function CourseDetails() {
@@ -38,7 +39,7 @@ export default function CourseDetails() {
 
   async function loadCourse() {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/course/getCourseDetails/${id}`);
+      const res = await fetch(`${API_BASE_URL}/course/getCourseDetails/${id}`);
       const data = await res.json();
       if (data.success) { setCourse(data.data); setLoading(false); return; }
     } catch {}
@@ -58,7 +59,7 @@ export default function CourseDetails() {
 
   async function loadReviews() {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/course/getAllRatingAndReviews/${id}`);
+      const res = await fetch(`${API_BASE_URL}/course/getAllRatingAndReviews/${id}`);
       const data = await res.json();
       if (data.success && data.data?.length) { setReviews(data.data); return; }
     } catch {}
@@ -78,7 +79,7 @@ export default function CourseDetails() {
         return;
       }
 
-      const res = await fetch(`http://localhost:4000/api/v1/payment/capturePayment`, {
+      const res = await fetch(`${API_BASE_URL}/payment/capturePayment`, {
         method: "POST",
         headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
@@ -106,7 +107,7 @@ export default function CourseDetails() {
         },
         handler: async function (response) {
           try {
-            const verifyRes = await fetch("http://localhost:4000/api/v1/payment/verifyPayment", {
+            const verifyRes = await fetch(`${API_BASE_URL}/payment/verifyPayment`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -152,7 +153,7 @@ export default function CourseDetails() {
     e.preventDefault();
     if (!token) { navigate("/login"); return; }
     try {
-      await fetch("http://localhost:4000/api/v1/course/createRatingAndReview", {
+      await fetch(`${API_BASE_URL}/course/createRatingAndReview`, {
         method: "POST",
         headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
         credentials: "include",

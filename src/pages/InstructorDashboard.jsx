@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
 import Sidebar from "../components/common/Sidebar";
+import { API_BASE_URL } from "../services/apis";
 import styles from "./InstructorDashboard.module.css";
 import dashStyles from "./DashBoard.module.css";
 
@@ -37,7 +38,7 @@ export default function InstructorDashboard() {
 
   async function loadCategories() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCategory");
+      const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
       const data = await res.json();
       const categoryList = data.allCategory || data.data || data.categories || [];
       if (data.success && Array.isArray(categoryList) && categoryList.length) {
@@ -48,7 +49,7 @@ export default function InstructorDashboard() {
 
   async function loadCourses(u) {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCourses");
+      const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
       const data = await res.json();
       if (data.success) {
         const mine = data.data.filter(c =>
@@ -63,7 +64,7 @@ export default function InstructorDashboard() {
 
   async function loadReviews() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/getAllRatingAndReviews");
+      const res = await fetch(`${API_BASE_URL}/course/getAllRatingAndReviews`);
       const data = await res.json();
       if (data.success && data.data?.length) { setReviews(data.data); return; }
     } catch {}
@@ -91,7 +92,7 @@ export default function InstructorDashboard() {
     fd.append("category1", form.category);
     fd.append("thumbnailImage", thumb);
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/createCourse", {
+      const res = await fetch(`${API_BASE_URL}/course/createCourse`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",

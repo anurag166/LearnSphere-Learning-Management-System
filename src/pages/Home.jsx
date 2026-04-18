@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import { API_BASE_URL } from "../services/apis";
 import styles from "./Home.module.css";
 
 const EMOJI_MAP = ["🚀","💡","⚡","🎯","🔥","🌟","💻","🎨"];
@@ -25,7 +26,7 @@ export default function Home() {
 
   async function fetchCourses() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCourses");
+      const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
       const data = await res.json();
       if (data.success && data.data.length) { setCourses(data.data.slice(0, 6)); }
       else setCourses(getDummy());
@@ -35,9 +36,11 @@ export default function Home() {
 
   async function fetchCategories() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCategory");
+      const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
       const data = await res.json();
-      if (data.success && data.data?.length) setCategories(data.data);
+      if (data.success && (data.allCategory?.length || data.data?.length)) {
+        setCategories(data.allCategory || data.data);
+      }
     } catch {}
   }
 
