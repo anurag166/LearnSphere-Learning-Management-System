@@ -16,12 +16,17 @@ const EMOJI = ["⚡","🚀","💡","🎯","🔥","💻"];
 export default function InstructorDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [courses, setCourses] = useState([]);
+  const [realCourses, setRealCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [user, setUser] = useState(null);
   const [createMsg, setCreateMsg] = useState({ type:"", text:"" });
+  const [builderMsg, setBuilderMsg] = useState({ type:"", text:"" });
   const [creating, setCreating] = useState(false);
+  const [addingSection, setAddingSection] = useState(false);
+  const [addingLecture, setAddingLecture] = useState(false);
   const thumbRef = useRef(null);
+  const lectureVideoRef = useRef(null);
   const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
@@ -29,6 +34,15 @@ export default function InstructorDashboard() {
     tags:"", instructions:"", level:"Beginner", language:"English",
   });
   const introVideoRef = useRef(null);
+  const [lessonCourseId, setLessonCourseId] = useState("");
+  const [sections, setSections] = useState([]);
+  const [sectionName, setSectionName] = useState("");
+  const [lectureForm, setLectureForm] = useState({
+    sectionId: "",
+    title: "",
+    timeDuration: "",
+    description: "",
+  });
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem("user") || "null");
@@ -57,11 +71,39 @@ export default function InstructorDashboard() {
         const mine = data.data.filter(c =>
           c.instructor?._id === u?._id || c.instructor === u?._id
         );
+        setRealCourses(mine);
         setCourses(mine.length ? mine : getDummy());
         return;
       }
     } catch {}
+    setRealCourses([]);
     setCourses(getDummy());
+  }
+
+  async function loadCourseSections(courseId) {
+    if (!courseId) {
+      setSections([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/course/getCourseDetails/${courseId}`);
+      const data = await res.json();
+      const courseData = data.data || {};
+      const content = Array.isArray(courseData.courseContent) ? courseData.courseContent : [];
+
+      const normalized = content.map((item, idx) => ({
+        _id: item?._id || item || `section-${idx}`,
+        sectionName: item?.sectionName || `Section ${idx + 1}`,
+      }));
+
+      setSections(normalized);
+      if (normalized.length && !lectureForm.sectionId) {
+        setLectureForm((prev) => ({ ...prev, sectionId: normalized[0]._id }));
+      }
+    } catch {
+      setSections([]);
+    }
   }
 
   async function loadReviews() {
@@ -111,18 +153,110 @@ export default function InstructorDashboard() {
       const data = await res.json();
       if (data.success) {
         setCreateMsg({ type:"success", text:"Course created successfully!" });
+        setBuilderMsg({ type:"success", text:"Now add sections and lecture videos below." });
         setForm({
           name:"", price:"", desc:"", whatYouWillLearn:"", category:"",
           tags:"", instructions:"", level:"Beginner", language:"English",
         });
         if (thumbRef.current) thumbRef.current.value = "";
         if (introVideoRef.current) introVideoRef.current.value = "";
+        const createdCourse = data.data;
+        if (createdCourse?._id) {
+          setLessonCourseId(createdCourse._id);
+          setRealCourses((prev) => [createdCourse, ...prev]);
+          await loadCourseSections(createdCourse._id);
+        }
         loadCourses(user);
       } else {
         setCreateMsg({ type:"error", text: data.message || "Failed to create course." });
       }
     } catch { setCreateMsg({ type:"error", text:"Server error." }); }
     setCreating(false);
+  }
+
+  async function addSection(e) {
+    e.preventDefault();
+    setBuilderMsg({ type:"", text:"" });
+
+    if (!lessonCourseId || !sectionName.trim()) {
+      setBuilderMsg({ type:"error", text:"Select a course and enter section name." });
+      return;
+    }
+
+    try {
+      setAddingSection(true);
+      const res = await fetch(`${API_BASE_URL}/course/createSection`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ courseId: lessonCourseId, sectionName: sectionName.trim() }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setBuilderMsg({ type:"success", text:"Section added successfully." });
+        setSectionName("");
+        const createdSection = data.newSection;
+        if (createdSection?._id) {
+          setSections((prev) => [...prev, createdSection]);
+          setLectureForm((prev) => ({ ...prev, sectionId: createdSection._id }));
+        } else {
+          await loadCourseSections(lessonCourseId);
+        }
+      } else {
+        setBuilderMsg({ type:"error", text: data.message || "Failed to add section." });
+      }
+    } catch {
+      setBuilderMsg({ type:"error", text:"Server error while adding section." });
+    } finally {
+      setAddingSection(false);
+    }
+  }
+
+  async function addLecture(e) {
+    e.preventDefault();
+    setBuilderMsg({ type:"", text:"" });
+
+    const video = lectureVideoRef.current?.files[0];
+    if (!lessonCourseId || !lectureForm.sectionId || !lectureForm.title || !lectureForm.timeDuration || !lectureForm.description || !video) {
+      setBuilderMsg({ type:"error", text:"Fill all lecture fields and upload a video." });
+      return;
+    }
+
+    try {
+      setAddingLecture(true);
+      const fd = new FormData();
+      fd.append("sectionId", lectureForm.sectionId);
+      fd.append("title", lectureForm.title);
+      fd.append("timeDuration", lectureForm.timeDuration);
+      fd.append("description", lectureForm.description);
+      fd.append("videoFile", video);
+
+      const res = await fetch(`${API_BASE_URL}/course/createSubSection`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: fd,
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setBuilderMsg({ type:"success", text:"Lecture video added successfully." });
+        setLectureForm((prev) => ({ ...prev, title:"", timeDuration:"", description:"" }));
+        if (lectureVideoRef.current) lectureVideoRef.current.value = "";
+      } else {
+        setBuilderMsg({ type:"error", text: data.message || "Failed to add lecture." });
+      }
+    } catch {
+      setBuilderMsg({ type:"error", text:"Server error while adding lecture." });
+    } finally {
+      setAddingLecture(false);
+    }
   }
 
   function getDummy() {
@@ -281,6 +415,102 @@ export default function InstructorDashboard() {
                   {creating ? "Creating..." : "Create Course"}
                 </button>
               </form>
+
+              <div className={styles.builderPanel}>
+                <h3>Course Builder: Sections & Lectures</h3>
+                <p className={styles.builderHint}>After creating a course, add sections and upload lesson videos here.</p>
+
+                {builderMsg.text && <div className={`alert alert-${builderMsg.type}`}>{builderMsg.text}</div>}
+
+                <div className="form-group">
+                  <label>Select Course</label>
+                  <select
+                    value={lessonCourseId}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setLessonCourseId(value);
+                      loadCourseSections(value);
+                    }}
+                  >
+                    <option value="">Select your course</option>
+                    {realCourses.map((c) => (
+                      <option key={c._id} value={c._id}>{c.courseName}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <form onSubmit={addSection} className={styles.inlineForm}>
+                  <div className="form-group" style={{flex:1}}>
+                    <label>New Section Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Introduction"
+                      value={sectionName}
+                      onChange={(e)=>setSectionName(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit" className={styles.btnSecondary} disabled={addingSection}>
+                    {addingSection ? "Adding..." : "Add Section"}
+                  </button>
+                </form>
+
+                {sections.length > 0 && (
+                  <div className={styles.sectionList}>
+                    {sections.map((s) => (
+                      <span key={s._id} className={styles.sectionChip}>{s.sectionName}</span>
+                    ))}
+                  </div>
+                )}
+
+                <form onSubmit={addLecture} className={styles.lectureForm}>
+                  <div className="form-group">
+                    <label>Section</label>
+                    <select
+                      value={lectureForm.sectionId}
+                      onChange={(e)=>setLectureForm({...lectureForm,sectionId:e.target.value})}
+                    >
+                      <option value="">Select section</option>
+                      {sections.map((s) => (
+                        <option key={s._id} value={s._id}>{s.sectionName}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Lecture Title</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. What is React?"
+                      value={lectureForm.title}
+                      onChange={(e)=>setLectureForm({...lectureForm,title:e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Time Duration (HH:MM:SS)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 00:12:30"
+                      value={lectureForm.timeDuration}
+                      onChange={(e)=>setLectureForm({...lectureForm,timeDuration:e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group" style={{gridColumn:"1/-1"}}>
+                    <label>Lecture Description</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Explain this lecture..."
+                      value={lectureForm.description}
+                      onChange={(e)=>setLectureForm({...lectureForm,description:e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group" style={{gridColumn:"1/-1"}}>
+                    <label>Lecture Video</label>
+                    <input type="file" accept="video/*" ref={lectureVideoRef} />
+                  </div>
+                  <button type="submit" className={styles.btnCreate} disabled={addingLecture}>
+                    {addingLecture ? "Uploading..." : "Add Lecture Video"}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         )}

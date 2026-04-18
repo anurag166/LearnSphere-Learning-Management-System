@@ -196,11 +196,27 @@ export const getCourseDetails   = async( req ,res)=>{
         try {
             courseDetails = await course.findById(courseId,{
                 courseName: true,
+                courseDescription: true,
                 price: true,
                 thumbnail: true,
                 instructor: true,
+                category: true,
+                whatWillYouLearn: true,
+                tag: true,
+                instructions: true,
+                level: true,
+                language: true,
+                introVideoUrl: true,
+                courseContent: true,
                 ratingsAndReviews: true,
                 studentsEnrolled: true,
+            })
+            .populate({
+                path: "courseContent",
+                populate: {
+                    path: "subSection",
+                    model: "subSection"
+                }
             })
         } catch (dbError) {
             // Handle invalid ObjectId format

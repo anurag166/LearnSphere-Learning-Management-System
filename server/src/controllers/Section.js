@@ -26,7 +26,8 @@ export const createSection = async (req , res)=>{
         return res.status(200).json({
             success: true,
             message: "section created successfully",
-            updateCourse
+            updateCourse,
+            newSection
         })
     } catch (error) {
         throw new ApiError(500,'unable to create section')

@@ -15,10 +15,12 @@ const courseSchema = new Schema({
         ref: 'User',
         required: true
     },
-    courseContent: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'section'
-    },
+        courseContent: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Section'
+            }
+        ],
     whatWillYouLearn: {
         type: String,
     },

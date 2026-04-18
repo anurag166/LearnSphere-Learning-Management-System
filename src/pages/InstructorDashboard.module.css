@@ -60,6 +60,70 @@
 .btnCreate:hover:not(:disabled) { background: #6d4eea; transform: translateY(-1px); }
 .btnCreate:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.builderPanel {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.builderPanel h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.builderHint {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-bottom: 14px;
+}
+
+.inlineForm {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 6px;
+}
+
+.btnSecondary {
+  background: rgba(124,92,252,0.12);
+  border: 1px solid rgba(124,92,252,0.2);
+  color: var(--accent3);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnSecondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sectionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 6px;
+}
+
+.sectionChip {
+  background: rgba(15,118,110,0.14);
+  border: 1px solid rgba(15,118,110,0.25);
+  color: #7de7dd;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+}
+
+.lectureForm {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
 /* Reviews */
 .reviewsGrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 20px; }
 .reviewCard { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
@@ -74,3 +138,14 @@
 }
 .revName { font-size: 0.875rem; font-weight: 500; }
 .revCourse { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+@media (max-width: 768px) {
+  .inlineForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lectureForm {
+    grid-template-columns: 1fr;
+  }
+}
