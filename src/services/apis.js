@@ -28,7 +28,7 @@ export const authEndpoints = {
 export const profileEndpoints = {
   GET_USER_DETAILS: `${BASE_URL}profile/getAllUserDetails`,
   UPDATE_PROFILE: `${BASE_URL}profile/updateProfile`,
-  UPDATE_DISPLAY_PICTURE: `${BASE_URL}profile/updateDisplayPicture`,
+  UPDATE_DISPLAY_PICTURE: `${BASE_URL}profile/update-display-picture`,
 };
 
 export const courseEndpoints = {

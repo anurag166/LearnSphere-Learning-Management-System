@@ -161,7 +161,7 @@ export default function Profile() {
       formData.append("displayPicture", selectedImage);
 
       const res = await apiConnector(
-        "PUT",
+        "POST",
         profileEndpoints.UPDATE_DISPLAY_PICTURE,
         formData,
         {

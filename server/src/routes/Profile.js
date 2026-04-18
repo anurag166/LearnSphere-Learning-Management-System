@@ -8,6 +8,9 @@ const router = Router()
 
 router.put("/updateProfile",auth ,updateProfile)
 router.put("/updateDisplayPicture",auth ,updateDisplayPicture)
+router.post("/updateDisplayPicture",auth ,updateDisplayPicture)
+router.put("/update-display-picture",auth ,updateDisplayPicture)
+router.post("/update-display-picture",auth ,updateDisplayPicture)
 router.delete("/deleteAccount",auth ,deleteAccount)
 router.get("/getAllUserDetails",auth ,getAllUserDetails)
 
