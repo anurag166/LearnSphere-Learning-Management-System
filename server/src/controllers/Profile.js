@@ -1,6 +1,7 @@
 import { profile } from "../models/profile.model.js";
 import {User} from "../models/user.model.js";
 import { ApiError } from "../utils/ApiErrors.js";
+import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 
 
 export const updateProfile = async(req , res)=>{
@@ -80,3 +81,39 @@ export const getAllUserDetails = async(req , res)=>{
         throw new ApiError(500,error.message)
     }
 }
+
+export const updateDisplayPicture = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const displayPicture = req.files?.displayPicture;
+
+        if (!displayPicture) {
+            return res.status(400).json({
+                success: false,
+                message: "displayPicture file is required",
+            });
+        }
+
+        const image = await uploadImageToCloudinary(
+            displayPicture,
+            process.env.FOLDER_NAME || "LearnSphere"
+        );
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { profileImage: image.secure_url },
+            { new: true }
+        ).populate("additionalDetails");
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile picture updated successfully",
+            data: updatedUser,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Failed to update profile picture",
+        });
+    }
+};

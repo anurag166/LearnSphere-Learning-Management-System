@@ -1,0 +1,310 @@
+.page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 10% 20%, rgba(27, 42, 65, 0.75), transparent 35%),
+    radial-gradient(circle at 85% 0%, rgba(9, 76, 92, 0.6), transparent 32%),
+    linear-gradient(135deg, #081321 0%, #111c2c 42%, #1f2a3b 100%);
+  color: #f4f7fb;
+  padding: 40px 18px 60px;
+}
+
+.gradientOrbOne,
+.gradientOrbTwo {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(0.3px);
+  pointer-events: none;
+}
+
+.gradientOrbOne {
+  width: 260px;
+  height: 260px;
+  top: -80px;
+  left: -40px;
+  background: radial-gradient(circle, rgba(42, 176, 196, 0.35), rgba(42, 176, 196, 0));
+}
+
+.gradientOrbTwo {
+  width: 320px;
+  height: 320px;
+  right: -90px;
+  bottom: -110px;
+  background: radial-gradient(circle, rgba(251, 159, 70, 0.22), rgba(251, 159, 70, 0));
+}
+
+.profileShell {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 22px;
+}
+
+.heroCard {
+  background: linear-gradient(145deg, rgba(7, 29, 44, 0.84), rgba(20, 39, 60, 0.8));
+  border: 1px solid rgba(170, 209, 225, 0.16);
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+}
+
+.avatarBlock {
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar,
+.avatarFallback {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+}
+
+.avatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(120deg, #2ab0c4, #f6a14e);
+  color: #0f1724;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.uploadLabel,
+.savePhotoBtn,
+.togglePasswordBtn,
+.passwordBtn {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.uploadLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e8f3fa;
+  padding: 11px;
+}
+
+.uploadLabel:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.savePhotoBtn {
+  background: linear-gradient(120deg, #f6a14e, #f7bc6d);
+  color: #1f2532;
+  padding: 11px;
+  box-shadow: 0 10px 28px rgba(246, 161, 78, 0.28);
+}
+
+.savePhotoBtn:hover:not(:disabled),
+.passwordBtn:hover:not(:disabled),
+.togglePasswordBtn:hover {
+  transform: translateY(-1px);
+}
+
+.savePhotoBtn:disabled,
+.passwordBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.identityBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.name {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.6vw, 2.6rem);
+  line-height: 1.15;
+  font-family: "Playfair Display", serif;
+  letter-spacing: 0.3px;
+}
+
+.email {
+  margin: 6px 0 0;
+  color: rgba(239, 248, 255, 0.84);
+}
+
+.roleChip {
+  align-self: flex-start;
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  padding: 6px 12px;
+}
+
+.metaGrid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.infoTile {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 14px;
+}
+
+.infoTile p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(227, 237, 245, 0.74);
+}
+
+.infoTile h4 {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.panelCard {
+  background: rgba(11, 29, 46, 0.72);
+  border: 1px solid rgba(165, 204, 226, 0.16);
+  border-radius: 20px;
+  padding: 22px;
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-size: 1.18rem;
+}
+
+.panelHeader p {
+  margin: 8px 0 0;
+  color: rgba(226, 238, 247, 0.68);
+  font-size: 0.9rem;
+}
+
+.aboutText {
+  margin-top: 16px;
+  line-height: 1.7;
+  color: rgba(245, 250, 255, 0.95);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px;
+}
+
+.togglePasswordBtn {
+  margin-top: 14px;
+  padding: 11px;
+  background: rgba(42, 176, 196, 0.18);
+  color: #c9f2ff;
+  border: 1px solid rgba(42, 176, 196, 0.4);
+}
+
+.passwordForm {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.passwordForm input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f7fb;
+  padding: 11px 12px;
+  outline: none;
+}
+
+.passwordForm input:focus {
+  border-color: rgba(42, 176, 196, 0.9);
+  box-shadow: 0 0 0 2px rgba(42, 176, 196, 0.18);
+}
+
+.passwordBtn {
+  margin-top: 2px;
+  padding: 11px;
+  background: linear-gradient(120deg, #2ab0c4, #44d5ea);
+  color: #0a1828;
+}
+
+.helperText {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #ffe3bf;
+}
+
+.loading,
+.error {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  color: #f4f7fb;
+  font-size: 1.05rem;
+  padding: 20px;
+}
+
+@media (max-width: 960px) {
+  .heroCard {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarBlock {
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 24px 12px 44px;
+  }
+
+  .heroCard,
+  .panelCard {
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .avatar,
+  .avatarFallback {
+    width: 118px;
+    height: 118px;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+}

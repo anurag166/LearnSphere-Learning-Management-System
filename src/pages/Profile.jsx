@@ -2,18 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiConnector } from "../services/apiConnector";
 import { API_BASE_URL, profileEndpoints } from "../services/apis";
+import styles from "./Profile.module.css";
 
-// 📅 Date formatter (YYYY-MM-DD)
 function formatDate(dateString) {
-  if (!dateString) return "—";
-  return new Date(dateString).toISOString().split("T")[0];
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toISOString().split("T")[0];
 }
 
 export default function Profile() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  //  Profile states
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,9 +23,13 @@ export default function Profile() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState("");
- const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  //  Fetch profile on load
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState("");
+
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -33,20 +38,12 @@ export default function Profile() {
 
     const fetchProfile = async () => {
       try {
-        const res = await apiConnector(
-          "GET",
-          profileEndpoints.GET_USER_DETAILS,
-          null,
-          {
-            Authorization: `Bearer ${token}`,
-          }
-        );
+        const res = await apiConnector("GET", profileEndpoints.GET_USER_DETAILS, null, {
+          Authorization: `Bearer ${token}`,
+        });
 
-        // apiConnector already returns response.data
         const userData = res.data;
-
         if (!userData) {
-          console.error("User data missing");
           return;
         }
 
@@ -63,13 +60,20 @@ export default function Profile() {
     fetchProfile();
   }, [navigate, token]);
 
-  // Update password handler
+  useEffect(() => {
+    return () => {
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+      }
+    };
+  }, [previewImage]);
+
   const updatePasswordHandler = async (e) => {
     e.preventDefault();
     setPasswordMessage("");
 
     if (newPassword !== confirmNewPassword) {
-      setPasswordMessage("New passwords do not match");
+      setPasswordMessage("New passwords do not match.");
       return;
     }
 
@@ -78,165 +82,225 @@ export default function Profile() {
 
       await apiConnector(
         "POST",
-        `${API_BASE_URL}/auth/change-password`,
+        `${API_BASE_URL}/auth/changepassword`,
         {
-          oldPassword,
+          oldpassword: oldPassword,
           newPassword,
-          confirmNewPassword,
+          confirmPassword: confirmNewPassword,
         },
         {
           Authorization: `Bearer ${token}`,
         }
       );
 
-      setPasswordMessage("Password updated successfully ");
+      setPasswordMessage("Password updated successfully.");
       setOldPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
     } catch (err) {
-      setPasswordMessage(
-        err.response?.data?.message || "Failed to update password"
-      );
+      setPasswordMessage(err.response?.data?.message || "Failed to update password.");
     } finally {
       setPasswordLoading(false);
     }
   };
 
-  //  Loading state
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    setPhotoMessage("");
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setPhotoMessage("Please choose a valid image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoMessage("Image size must be under 5MB.");
+      return;
+    }
+
+    if (previewImage) {
+      URL.revokeObjectURL(previewImage);
+    }
+
+    setSelectedImage(file);
+    setPreviewImage(URL.createObjectURL(file));
+  };
+
+  const updateProfilePicture = async () => {
+    if (!selectedImage) {
+      setPhotoMessage("Please select an image first.");
+      return;
+    }
+
+    try {
+      setPhotoLoading(true);
+      setPhotoMessage("");
+
+      const formData = new FormData();
+      formData.append("displayPicture", selectedImage);
+
+      const res = await apiConnector(
+        "PUT",
+        profileEndpoints.UPDATE_DISPLAY_PICTURE,
+        formData,
+        {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        }
+      );
+
+      const updatedUser = res.data || res.user || res.updatedUser;
+      if (updatedUser) {
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+
+      setSelectedImage(null);
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+      }
+      setPreviewImage("");
+      setPhotoMessage("Profile picture updated successfully.");
+    } catch (err) {
+      setPhotoMessage(err.response?.data?.message || "Failed to update profile picture.");
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Loading profile...
-      </div>
-    );
+    return <div className={styles.loading}>Loading profile...</div>;
   }
 
-  //  Error state
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-red-400">
-        Failed to load profile
-      </div>
-    );
+    return <div className={styles.error}>Failed to load profile.</div>;
   }
 
   const profile = user.additionalDetails || {};
+  const accountInitials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-richblack-900 via-richblack-800 to-black px-6 py-16 text-white">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className={styles.page}>
+      <div className={styles.gradientOrbOne} />
+      <div className={styles.gradientOrbTwo} />
 
-        {/* Header */}
-        <div className="bg-richblack-800/90 border border-richblack-700 rounded-2xl p-8 flex items-center gap-6">
-          <img
-            src={user.profileImage}
-            alt="profile"
-            className="w-24 h-24 rounded-full"
-          />
+      <div className={styles.profileShell}>
+        <section className={styles.heroCard}>
+          <div className={styles.avatarBlock}>
+            {user.profileImage ? (
+              <img src={previewImage || user.profileImage} alt="profile" className={styles.avatar} />
+            ) : (
+              <div className={styles.avatarFallback}>{accountInitials || "U"}</div>
+            )}
 
-          <div>
-            <h1 className="text-3xl font-bold">
+            <label className={styles.uploadLabel}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className={styles.hiddenInput}
+              />
+              Choose new photo
+            </label>
+
+            <button
+              type="button"
+              onClick={updateProfilePicture}
+              disabled={photoLoading}
+              className={styles.savePhotoBtn}
+            >
+              {photoLoading ? "Uploading..." : "Save photo"}
+            </button>
+
+            {photoMessage && <p className={styles.helperText}>{photoMessage}</p>}
+          </div>
+
+          <div className={styles.identityBlock}>
+            <h1 className={styles.name}>
               {user.firstName} {user.lastName}
             </h1>
-            <p className="text-richblack-300">{user.email}</p>
-            <span className="inline-block mt-2 px-3 py-1 text-sm rounded-full bg-richblack-700 text-yellow-300">
-              {user.accountType}
-            </span>
-          </div>
-        </div>
+            <p className={styles.email}>{user.email}</p>
+            <span className={styles.roleChip}>{user.accountType}</span>
 
-        {/*  Personal Info */}
-        <div className="bg-richblack-800 border border-richblack-700 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-6">
-            Personal Information
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-6 text-sm">
-            <Field label="Gender" value={profile.gender} />
-            <Field label="Date of Birth" value={formatDate(profile.dob)} />
-            <Field label="Contact Number" value={profile.contactNumber} />
-
-            <div className="md:col-span-2">
-              <p className="text-richblack-400 mb-1">About</p>
-              <p className="bg-richblack-700 rounded-md p-3">
-                {profile.about || "—"}
-              </p>
+            <div className={styles.metaGrid}>
+              <InfoTile label="Joined As" value={user.accountType || "-"} />
+              <InfoTile label="Date of Birth" value={formatDate(profile.dob)} />
+              <InfoTile label="Gender" value={profile.gender || "-"} />
+              <InfoTile label="Contact" value={profile.contactNumber || "-"} />
             </div>
           </div>
+        </section>
+
+        <div className={styles.contentGrid}>
+          <section className={styles.panelCard}>
+            <div className={styles.panelHeader}>
+              <h2>About</h2>
+              <p>Your profile summary and personal details</p>
+            </div>
+            <p className={styles.aboutText}>
+              {profile.about || "Tell learners more about yourself from settings."}
+            </p>
+          </section>
+
+          <section className={styles.panelCard}>
+            <div className={styles.panelHeader}>
+              <h2>Security</h2>
+              <p>Keep your account protected</p>
+            </div>
+
+            <button
+              onClick={() => setShowPasswordForm(!showPasswordForm)}
+              className={styles.togglePasswordBtn}
+              type="button"
+            >
+              {showPasswordForm ? "Hide password form" : "Change password"}
+            </button>
+
+            {showPasswordForm && (
+              <form onSubmit={updatePasswordHandler} className={styles.passwordForm}>
+                <input
+                  type="password"
+                  placeholder="Current password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  required
+                />
+
+                {passwordMessage && <p className={styles.helperText}>{passwordMessage}</p>}
+
+                <button type="submit" disabled={passwordLoading} className={styles.passwordBtn}>
+                  {passwordLoading ? "Updating..." : "Update password"}
+                </button>
+              </form>
+            )}
+          </section>
         </div>
-
-        {/* Update Password */}
-        {/* Change Password (Minimal UX) */}
-<div className="bg-richblack-800 border border-richblack-700 rounded-xl p-6">
-  <button
-    onClick={() => setShowPasswordForm(!showPasswordForm)}
-    className="text-yellow-300 hover:underline text-sm font-medium"
-  >
-    {showPasswordForm ? "Cancel" : "Change password"}
-  </button>
-
-  {showPasswordForm && (
-    <form
-      onSubmit={updatePasswordHandler}
-      className="mt-4 space-y-4 max-w-md"
-    >
-      <input
-        type="password"
-        placeholder="Current password"
-        value={oldPassword}
-        onChange={(e) => setOldPassword(e.target.value)}
-        required
-        className="w-full px-3 py-2 rounded-md bg-richblack-700 text-white outline-none focus:ring-2 focus:ring-yellow-300"
-      />
-
-      <input
-        type="password"
-        placeholder="New password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        required
-        className="w-full px-3 py-2 rounded-md bg-richblack-700 text-white outline-none focus:ring-2 focus:ring-yellow-300"
-      />
-
-      <input
-        type="password"
-        placeholder="Confirm new password"
-        value={confirmNewPassword}
-        onChange={(e) => setConfirmNewPassword(e.target.value)}
-        required
-        className="w-full px-3 py-2 rounded-md bg-richblack-700 text-white outline-none focus:ring-2 focus:ring-yellow-300"
-      />
-
-      {passwordMessage && (
-        <p className="text-sm text-yellow-300">
-          {passwordMessage}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={passwordLoading}
-        className="bg-yellow-300 text-black px-5 py-2 rounded-md font-semibold hover:bg-yellow-400 transition disabled:opacity-70"
-      >
-        {passwordLoading ? "Updating..." : "Update password"}
-      </button>
-    </form>
-  )}
-</div>
-
       </div>
     </div>
   );
 }
 
-// 🔹 Reusable field
-function Field({ label, value }) {
+function InfoTile({ label, value }) {
   return (
-    <div>
-      <p className="text-richblack-400 mb-1">{label}</p>
-      <p className="bg-richblack-700 rounded-md p-3">
-        {value || "—"}
-      </p>
+    <div className={styles.infoTile}>
+      <p>{label}</p>
+      <h4>{value || "-"}</h4>
     </div>
   );
 }
