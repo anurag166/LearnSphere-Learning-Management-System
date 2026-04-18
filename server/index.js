@@ -16,11 +16,13 @@ dotenv.config();
 
 const app = express();
 
+const normalizeOrigin = (origin) => origin?.trim().replace(/\/$/, "");
+
 const envAllowedOrigins = [
   process.env.FRONTEND_URL,
   ...(process.env.FRONTEND_URLS || "").split(","),
 ]
-  .map((origin) => origin?.trim())
+  .map(normalizeOrigin)
   .filter(Boolean);
 
 const allowedOrigins = new Set([
@@ -28,18 +30,22 @@ const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
+  "https://studynotion-mu-five.vercel.app",
 ]);
 
-const allowVercelPreviewOrigins = process.env.ALLOW_VERCEL_PREVIEWS === "true";
+// Default to allowing Vercel domains unless explicitly disabled.
+const allowVercelPreviewOrigins = process.env.ALLOW_VERCEL_PREVIEWS !== "false";
 
 const isAllowedOrigin = (origin) => {
-  if (allowedOrigins.has(origin)) {
+  const normalizedOrigin = normalizeOrigin(origin);
+
+  if (allowedOrigins.has(normalizedOrigin)) {
     return true;
   }
 
   if (allowVercelPreviewOrigins) {
     try {
-      const { hostname } = new URL(origin);
+      const { hostname } = new URL(normalizedOrigin);
       return hostname.endsWith(".vercel.app");
     } catch {
       return false;
@@ -49,25 +55,27 @@ const isAllowedOrigin = (origin) => {
   return false;
 };
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow server-to-server tools and same-origin requests without an Origin header.
-      if (!origin) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow server-to-server tools and same-origin requests without an Origin header.
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      if (isAllowedOrigin(origin)) {
-        return callback(null, true);
-      }
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
 
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 
 app.use(express.json());

@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "echo Backend build step not required",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },

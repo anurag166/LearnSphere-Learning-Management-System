@@ -1,11 +1,19 @@
-const envApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const envApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const renderProductionApiBaseUrl =
+  "https://studynotion-learning-management-system.onrender.com/api/v1";
 
-// In production, default to same-origin API path to avoid accidental localhost calls.
 const defaultApiBaseUrl = import.meta.env.DEV
   ? "http://localhost:4000/api/v1"
-  : "/api/v1";
+  : renderProductionApiBaseUrl;
 
-export const API_BASE_URL = (envApiBaseUrl || defaultApiBaseUrl).replace(/\/$/, "");
+const isLocalhostApiUrl = (url = "") => /https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(url);
+
+// Guard against accidentally deploying with localhost API URL in frontend env vars.
+const resolvedApiBaseUrl = !import.meta.env.DEV && isLocalhostApiUrl(envApiBaseUrl)
+  ? renderProductionApiBaseUrl
+  : (envApiBaseUrl || defaultApiBaseUrl);
+
+export const API_BASE_URL = resolvedApiBaseUrl.replace(/\/$/, "");
 
 const BASE_URL = `${API_BASE_URL}/`;
 

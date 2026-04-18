@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiConnector } from "../services/apiConnector";
-import { profileEndpoints } from "../services/apis";
+import { API_BASE_URL, profileEndpoints } from "../services/apis";
 
 // 📅 Date formatter (YYYY-MM-DD)
 function formatDate(dateString) {
@@ -78,7 +78,7 @@ export default function Profile() {
 
       await apiConnector(
         "POST",
-        "http://localhost:4000/api/v1/auth/change-password",
+        `${API_BASE_URL}/auth/change-password`,
         {
           oldPassword,
           newPassword,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import { API_BASE_URL } from "../services/apis";
 
 export default function AddCourse() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function AddCourse() {
 
   async function fetchCategories() {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCategory");
+      const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
       const data = await res.json();
       const cats = data.allCategory || data.data || data.categories || [];
       
@@ -83,7 +84,7 @@ export default function AddCourse() {
       uploadData.append("category1", formData.category1);
       uploadData.append("thumbnailImage", thumbnail);
 
-      const res = await fetch("http://localhost:4000/api/v1/course/createCourse", {
+      const res = await fetch(`${API_BASE_URL}/course/createCourse`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
