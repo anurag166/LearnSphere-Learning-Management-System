@@ -11,6 +11,10 @@ function formatDate(dateString) {
   return date.toISOString().split("T")[0];
 }
 
+function toHttpsUrl(url = "") {
+  return typeof url === "string" ? url.replace(/^http:\/\//i, "https://") : "";
+}
+
 export default function Profile() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -160,14 +164,38 @@ export default function Profile() {
       const formData = new FormData();
       formData.append("displayPicture", selectedImage);
 
-      const res = await apiConnector(
-        "POST",
-        profileEndpoints.UPDATE_DISPLAY_PICTURE,
-        formData,
-        {
-          Authorization: `Bearer ${token}`,
+      const uploadTargets = [
+        { method: "POST", url: `${API_BASE_URL}/profile/update-display-picture` },
+        { method: "PUT", url: `${API_BASE_URL}/profile/update-display-picture` },
+        { method: "POST", url: `${API_BASE_URL}/profile/updateDisplayPicture` },
+        { method: "PUT", url: `${API_BASE_URL}/profile/updateDisplayPicture` },
+        { method: "POST", url: profileEndpoints.UPDATE_DISPLAY_PICTURE },
+      ];
+
+      let res = null;
+      let lastError = null;
+
+      for (const target of uploadTargets) {
+        try {
+          res = await apiConnector(target.method, target.url, formData, {
+            Authorization: `Bearer ${token}`,
+          });
+          break;
+        } catch (err) {
+          const status = err?.response?.status;
+          lastError = err;
+
+          if (status === 404 || status === 405) {
+            continue;
+          }
+
+          throw err;
         }
-      );
+      }
+
+      if (!res) {
+        throw lastError || new Error("Upload endpoint not found");
+      }
 
       const updatedUser = res.data || res.user || res.updatedUser;
       if (updatedUser) {
@@ -250,7 +278,7 @@ export default function Profile() {
         <section className={styles.heroCard}>
           <div className={styles.avatarBlock}>
             {user.profileImage ? (
-              <img src={previewImage || user.profileImage} alt="profile" className={styles.avatar} />
+              <img src={previewImage || toHttpsUrl(user.profileImage)} alt="profile" className={styles.avatar} />
             ) : (
               <div className={styles.avatarFallback}>{accountInitials || "U"}</div>
             )}

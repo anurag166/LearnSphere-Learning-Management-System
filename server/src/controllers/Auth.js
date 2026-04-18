@@ -107,7 +107,7 @@ export const signUp = async (req ,res )=>{
             password: hashPassword,
             accountType,
             additionalDetails: profileDetails._id,
-            profileImage: `http://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
+            profileImage: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
         })
         console.log(user)
         return res.status(200).json({
