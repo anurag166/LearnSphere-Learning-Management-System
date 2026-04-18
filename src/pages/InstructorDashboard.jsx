@@ -26,7 +26,9 @@ export default function InstructorDashboard() {
 
   const [form, setForm] = useState({
     name:"", price:"", desc:"", whatYouWillLearn:"", category:"",
+    tags:"", instructions:"", level:"Beginner", language:"English",
   });
+  const introVideoRef = useRef(null);
 
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem("user") || "null");
@@ -79,6 +81,7 @@ export default function InstructorDashboard() {
     e.preventDefault();
     setCreateMsg({ type:"", text:"" });
     const thumb = thumbRef.current?.files[0];
+    const introVideo = introVideoRef.current?.files[0];
     if (!form.name||!form.price||!form.desc||!form.category||!thumb) {
       setCreateMsg({ type:"error", text:"Please fill all required fields and upload a thumbnail." });
       return;
@@ -90,7 +93,14 @@ export default function InstructorDashboard() {
     fd.append("courseDescription", form.desc);
     fd.append("whatWillYouLearn", form.whatYouWillLearn);
     fd.append("category1", form.category);
+    fd.append("tags", form.tags);
+    fd.append("instructions", form.instructions);
+    fd.append("level", form.level);
+    fd.append("language", form.language);
     fd.append("thumbnailImage", thumb);
+    if (introVideo) {
+      fd.append("introVideo", introVideo);
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/course/createCourse`, {
         method: "POST",
@@ -101,8 +111,12 @@ export default function InstructorDashboard() {
       const data = await res.json();
       if (data.success) {
         setCreateMsg({ type:"success", text:"Course created successfully!" });
-        setForm({ name:"", price:"", desc:"", whatYouWillLearn:"", category:"" });
+        setForm({
+          name:"", price:"", desc:"", whatYouWillLearn:"", category:"",
+          tags:"", instructions:"", level:"Beginner", language:"English",
+        });
         if (thumbRef.current) thumbRef.current.value = "";
+        if (introVideoRef.current) introVideoRef.current.value = "";
         loadCourses(user);
       } else {
         setCreateMsg({ type:"error", text: data.message || "Failed to create course." });
@@ -225,6 +239,23 @@ export default function InstructorDashboard() {
                     <label>Thumbnail *</label>
                     <input type="file" accept="image/*" ref={thumbRef} />
                   </div>
+                  <div className="form-group">
+                    <label>Intro Video</label>
+                    <input type="file" accept="video/*" ref={introVideoRef} />
+                  </div>
+                  <div className="form-group">
+                    <label>Level</label>
+                    <select value={form.level} onChange={e=>setForm({...form,level:e.target.value})}>
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Language</label>
+                    <input type="text" placeholder="e.g. English"
+                      value={form.language} onChange={e=>setForm({...form,language:e.target.value})} />
+                  </div>
                   <div className="form-group" style={{gridColumn:"1/-1"}}>
                     <label>Description *</label>
                     <textarea placeholder="Describe your course..." rows={4}
@@ -234,6 +265,16 @@ export default function InstructorDashboard() {
                     <label>What Students Will Learn</label>
                     <textarea placeholder="List key outcomes, one per line..." rows={3}
                       value={form.whatYouWillLearn} onChange={e=>setForm({...form,whatYouWillLearn:e.target.value})} />
+                  </div>
+                  <div className="form-group" style={{gridColumn:"1/-1"}}>
+                    <label>Tags</label>
+                    <input type="text" placeholder="e.g. react, node, fullstack"
+                      value={form.tags} onChange={e=>setForm({...form,tags:e.target.value})} />
+                  </div>
+                  <div className="form-group" style={{gridColumn:"1/-1"}}>
+                    <label>Requirements / Instructions</label>
+                    <textarea placeholder="One per line or comma separated" rows={3}
+                      value={form.instructions} onChange={e=>setForm({...form,instructions:e.target.value})} />
                   </div>
                 </div>
                 <button type="submit" className={styles.btnCreate} disabled={creating}>

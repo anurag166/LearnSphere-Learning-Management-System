@@ -14,9 +14,14 @@ export default function AddCourse() {
     whatWillYouLearn: "",
     price: "",
     category1: "",
+    tags: "",
+    instructions: "",
+    level: "Beginner",
+    language: "English",
   });
 
   const [thumbnail, setThumbnail] = useState(null);
+  const [introVideo, setIntroVideo] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -51,6 +56,10 @@ export default function AddCourse() {
     setThumbnail(e.target.files[0]);
   }
 
+  function handleIntroVideoChange(e) {
+    setIntroVideo(e.target.files[0]);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage({ type: "", text: "" });
@@ -82,7 +91,14 @@ export default function AddCourse() {
       uploadData.append("whatWillYouLearn", formData.whatWillYouLearn);
       uploadData.append("price", formData.price);
       uploadData.append("category1", formData.category1);
+      uploadData.append("tags", formData.tags);
+      uploadData.append("instructions", formData.instructions);
+      uploadData.append("level", formData.level);
+      uploadData.append("language", formData.language);
       uploadData.append("thumbnailImage", thumbnail);
+      if (introVideo) {
+        uploadData.append("introVideo", introVideo);
+      }
 
       const res = await fetch(`${API_BASE_URL}/course/createCourse`, {
         method: "POST",
@@ -252,6 +268,102 @@ export default function AddCourse() {
               />
             </div>
 
+            {/* Tags */}
+            <div>
+              <label style={{ display: "block", marginBottom: "6px", fontWeight: "600", color: "var(--text1)" }}>
+                Tags
+              </label>
+              <input
+                type="text"
+                name="tags"
+                value={formData.tags}
+                onChange={handleInputChange}
+                placeholder="e.g., javascript, react, frontend"
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  background: "var(--bg1)",
+                  color: "var(--text1)",
+                }}
+              />
+            </div>
+
+            {/* Level */}
+            <div>
+              <label style={{ display: "block", marginBottom: "6px", fontWeight: "600", color: "var(--text1)" }}>
+                Level
+              </label>
+              <select
+                name="level"
+                value={formData.level}
+                onChange={handleInputChange}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  background: "var(--bg1)",
+                  color: "var(--text1)",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            {/* Language */}
+            <div>
+              <label style={{ display: "block", marginBottom: "6px", fontWeight: "600", color: "var(--text1)" }}>
+                Language
+              </label>
+              <input
+                type="text"
+                name="language"
+                value={formData.language}
+                onChange={handleInputChange}
+                placeholder="e.g., English"
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  background: "var(--bg1)",
+                  color: "var(--text1)",
+                }}
+              />
+            </div>
+
+            {/* Requirements / Instructions */}
+            <div>
+              <label style={{ display: "block", marginBottom: "6px", fontWeight: "600", color: "var(--text1)" }}>
+                Requirements / Instructions
+              </label>
+              <textarea
+                name="instructions"
+                value={formData.instructions}
+                onChange={handleInputChange}
+                placeholder="One per line or comma separated"
+                rows="3"
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  background: "var(--bg1)",
+                  color: "var(--text1)",
+                  fontFamily: "inherit",
+                }}
+              />
+            </div>
+
             {/* Thumbnail */}
             <div>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: "600", color: "var(--text1)" }}>
@@ -277,6 +389,32 @@ export default function AddCourse() {
                 </p>
               )}
             </div>
+
+              {/* Intro Video */}
+              <div>
+                <label style={{ display: "block", marginBottom: "6px", fontWeight: "600", color: "var(--text1)" }}>
+                  Intro Video (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleIntroVideoChange}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    border: "1px solid var(--border)",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    background: "var(--bg1)",
+                    color: "var(--text1)",
+                  }}
+                />
+                {introVideo && (
+                  <p style={{ marginTop: "8px", fontSize: "12px", color: "var(--success)" }}>
+                    ✓ {introVideo.name} selected
+                  </p>
+                )}
+              </div>
 
             {/* Submit Button */}
             <button

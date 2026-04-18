@@ -10,11 +10,58 @@ import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 export const createCourse = async (req , res)=>{
     try {
         //fetch data
-        const{courseName,courseDescription,whatWillYouLearn,whatYouWillLearn,price,category1} = req.body;
+        const{
+            courseName,
+            courseDescription,
+            whatWillYouLearn,
+            whatYouWillLearn,
+            price,
+            category1,
+            tags,
+            tag,
+            instructions,
+            level,
+            language,
+        } = req.body;
         const learnContent = whatWillYouLearn || whatYouWillLearn;
+
+        const parseListInput = (input) => {
+            if (!input) return [];
+
+            if (Array.isArray(input)) {
+                return input.map((item) => String(item).trim()).filter(Boolean);
+            }
+
+            if (typeof input === "string") {
+                const trimmed = input.trim();
+                if (!trimmed) return [];
+
+                if ((trimmed.startsWith("[") && trimmed.endsWith("]")) || (trimmed.startsWith("{") && trimmed.endsWith("}"))) {
+                    try {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed)) {
+                            return parsed.map((item) => String(item).trim()).filter(Boolean);
+                        }
+                    } catch {
+                        // Fallback to comma/newline split below.
+                    }
+                }
+
+                return trimmed
+                    .split(/\r?\n|,/)
+                    .map((item) => item.trim())
+                    .filter(Boolean);
+            }
+
+            return [];
+        };
+
+        const resolvedTags = parseListInput(tags || tag);
+        const resolvedInstructions = parseListInput(instructions);
 
         //get thumbnail
         const thumbnail = req.files?.thumbnailImage;
+        const introVideo = req.files?.introVideo;
 
         //validation
         if(!courseName || !courseDescription || !learnContent || !price || !category1 || !thumbnail){
@@ -57,6 +104,20 @@ export const createCourse = async (req , res)=>{
             });
         }
 
+        let introVideoUrl = "";
+        if (introVideo) {
+            try {
+                const uploadedVideo = await uploadImageToCloudinary(introVideo, process.env.FOLDER_NAME);
+                introVideoUrl = uploadedVideo.secure_url;
+            } catch (videoUploadErr) {
+                console.log("Video upload error:", videoUploadErr);
+                return res.status(500).json({
+                    success: false,
+                    message: "Failed to upload intro video. Please try again."
+                });
+            }
+        }
+
         //create entry in db
         const newCourse = await course.create({
             courseName,
@@ -66,6 +127,11 @@ export const createCourse = async (req , res)=>{
             price,
             category: categoryDetails._id,
             thumbnail: thumbnailImage.secure_url,
+            tag: resolvedTags,
+            instructions: resolvedInstructions,
+            level: level || "Beginner",
+            language: language || "English",
+            introVideoUrl,
         })
 
         //add the new course to the user schema of instructor

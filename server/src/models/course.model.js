@@ -22,6 +22,29 @@ const courseSchema = new Schema({
     whatWillYouLearn: {
         type: String,
     },
+        tag: [
+            {
+                type: String,
+                trim: true,
+            },
+        ],
+        instructions: [
+            {
+                type: String,
+                trim: true,
+            },
+        ],
+        level: {
+            type: String,
+            default: "Beginner",
+        },
+        language: {
+            type: String,
+            default: "English",
+        },
+        introVideoUrl: {
+            type: String,
+        },
     RatingandReviews: {
        type: mongoose.Schema.Types.ObjectId,
        ref: 'RatingAndReviews'
