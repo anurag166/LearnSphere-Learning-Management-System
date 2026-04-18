@@ -220,6 +220,74 @@
   padding: 14px;
 }
 
+.profileForm {
+  margin-top: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.fieldGroup span {
+  font-size: 0.82rem;
+  color: rgba(227, 237, 245, 0.78);
+}
+
+.fieldGroup input,
+.fieldGroup select,
+.fieldGroup textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f7fb;
+  padding: 11px 12px;
+  outline: none;
+}
+
+.fieldGroup textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.fieldGroup input:focus,
+.fieldGroup select:focus,
+.fieldGroup textarea:focus {
+  border-color: rgba(42, 176, 196, 0.9);
+  box-shadow: 0 0 0 2px rgba(42, 176, 196, 0.18);
+}
+
+.profileSaveBtn {
+  width: 180px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 11px;
+  background: linear-gradient(120deg, #f6a14e, #f7bc6d);
+  color: #1f2532;
+  box-shadow: 0 10px 28px rgba(246, 161, 78, 0.28);
+  transition: transform 0.2s ease;
+}
+
+.profileSaveBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.profileSaveBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .togglePasswordBtn {
   margin-top: 14px;
   padding: 11px;
@@ -306,5 +374,13 @@
 
   .metaGrid {
     grid-template-columns: 1fr;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .profileSaveBtn {
+    width: 100%;
   }
 }

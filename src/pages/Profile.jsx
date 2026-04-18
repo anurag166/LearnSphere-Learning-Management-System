@@ -29,6 +29,14 @@ export default function Profile() {
   const [previewImage, setPreviewImage] = useState("");
   const [photoLoading, setPhotoLoading] = useState(false);
   const [photoMessage, setPhotoMessage] = useState("");
+  const [profileForm, setProfileForm] = useState({
+    gender: "",
+    dob: "",
+    contactNumber: "",
+    about: "",
+  });
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
 
   useEffect(() => {
     if (!token) {
@@ -67,6 +75,17 @@ export default function Profile() {
       }
     };
   }, [previewImage]);
+
+  useEffect(() => {
+    if (!user?.additionalDetails) return;
+    const p = user.additionalDetails;
+    setProfileForm({
+      gender: p.gender || "",
+      dob: p.dob ? formatDate(p.dob) : "",
+      contactNumber: p.contactNumber || "",
+      about: p.about || "",
+    });
+  }, [user]);
 
   const updatePasswordHandler = async (e) => {
     e.preventDefault();
@@ -147,7 +166,6 @@ export default function Profile() {
         formData,
         {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         }
       );
 
@@ -167,6 +185,53 @@ export default function Profile() {
       setPhotoMessage(err.response?.data?.message || "Failed to update profile picture.");
     } finally {
       setPhotoLoading(false);
+    }
+  };
+
+  const updateProfileInfo = async (e) => {
+    e.preventDefault();
+    setProfileMessage("");
+
+    if (!profileForm.gender || !profileForm.contactNumber) {
+      setProfileMessage("Gender and contact number are required.");
+      return;
+    }
+
+    try {
+      setProfileLoading(true);
+      const res = await apiConnector(
+        "PUT",
+        profileEndpoints.UPDATE_PROFILE,
+        {
+          gender: profileForm.gender,
+          dob: profileForm.dob,
+          dateOfBirth: profileForm.dob,
+          contactNumber: profileForm.contactNumber,
+          about: profileForm.about,
+        },
+        {
+          Authorization: `Bearer ${token}`,
+        }
+      );
+
+      const updatedDetails = res.profileDetails || res.data?.additionalDetails || res.data;
+      setUser((prev) => {
+        const nextUser = {
+          ...prev,
+          additionalDetails: {
+            ...(prev?.additionalDetails || {}),
+            ...(updatedDetails || {}),
+          },
+        };
+        localStorage.setItem("user", JSON.stringify(nextUser));
+        return nextUser;
+      });
+
+      setProfileMessage("Profile details updated successfully.");
+    } catch (err) {
+      setProfileMessage(err.response?.data?.message || "Failed to update profile details.");
+    } finally {
+      setProfileLoading(false);
     }
   };
 
@@ -236,12 +301,62 @@ export default function Profile() {
         <div className={styles.contentGrid}>
           <section className={styles.panelCard}>
             <div className={styles.panelHeader}>
-              <h2>About</h2>
-              <p>Your profile summary and personal details</p>
+              <h2>Edit Personal Info</h2>
+              <p>Update your gender, date of birth, contact number and bio</p>
             </div>
-            <p className={styles.aboutText}>
-              {profile.about || "Tell learners more about yourself from settings."}
-            </p>
+            <form onSubmit={updateProfileInfo} className={styles.profileForm}>
+              <div className={styles.formGrid}>
+                <label className={styles.fieldGroup}>
+                  <span>Gender</span>
+                  <select
+                    value={profileForm.gender}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, gender: e.target.value }))}
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+
+                <label className={styles.fieldGroup}>
+                  <span>Date of Birth</span>
+                  <input
+                    type="date"
+                    value={profileForm.dob}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, dob: e.target.value }))}
+                  />
+                </label>
+
+                <label className={styles.fieldGroup}>
+                  <span>Contact Number</span>
+                  <input
+                    type="text"
+                    value={profileForm.contactNumber}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, contactNumber: e.target.value }))}
+                    placeholder="Enter phone number"
+                    required
+                  />
+                </label>
+              </div>
+
+              <label className={styles.fieldGroup}>
+                <span>About Yourself</span>
+                <textarea
+                  rows="4"
+                  value={profileForm.about}
+                  onChange={(e) => setProfileForm((prev) => ({ ...prev, about: e.target.value }))}
+                  placeholder="Share a short bio"
+                />
+              </label>
+
+              {profileMessage && <p className={styles.helperText}>{profileMessage}</p>}
+
+              <button type="submit" className={styles.profileSaveBtn} disabled={profileLoading}>
+                {profileLoading ? "Saving..." : "Save Profile"}
+              </button>
+            </form>
           </section>
 
           <section className={styles.panelCard}>

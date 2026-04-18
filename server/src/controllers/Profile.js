@@ -7,22 +7,43 @@ import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 export const updateProfile = async(req , res)=>{
     try {
         //get data
-        const {dateOfBirth="",about="",contactNumber,gender}=req.body;
+        const {
+            dateOfBirth = "",
+            dob = "",
+            about = "",
+            contactNumber,
+            gender,
+        } = req.body;
 
         //get Userid
         const userId = req.user.id;
         //validation
         if(!contactNumber || !gender || !userId){
-            throw new ApiError(400,'all fields are required')
+            return res.status(400).json({
+                success: false,
+                message: 'all fields are required'
+            })
         }
         //find profile
         const userDetails = await User.findById(userId);
+        if (!userDetails) {
+            return res.status(404).json({
+                success: false,
+                message: 'user not found'
+            })
+        }
         const profileId =  userDetails.additionalDetails;
         const profileDetails = await profile.findById(profileId);
-        console.log("User ID:", userId);
-console.log("Profile ID:", profileId); 
+        if (!profileDetails) {
+            return res.status(404).json({
+                success: false,
+                message: 'profile not found'
+            })
+        }
+
+        const resolvedDob = dob || dateOfBirth;
         //update profile
-        profileDetails.dateOfBirth=dateOfBirth
+        profileDetails.dob = resolvedDob
         profileDetails.about=about
         profileDetails.gender=gender
         profileDetails.contactNumber=contactNumber
@@ -34,8 +55,10 @@ console.log("Profile ID:", profileId);
             profileDetails
         })
     } catch (error) {
-      console.log('error in updating profile')
-      throw new ApiError(500,error.message)
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'error in updating profile'
+            })
     }
 }
 
@@ -85,7 +108,10 @@ export const getAllUserDetails = async(req , res)=>{
 export const updateDisplayPicture = async (req, res) => {
     try {
         const userId = req.user.id;
-        const displayPicture = req.files?.displayPicture;
+        const displayPicture =
+            req.files?.displayPicture ||
+            req.files?.profileImage ||
+            req.files?.file;
 
         if (!displayPicture) {
             return res.status(400).json({
