@@ -12,6 +12,7 @@ const GRADIENTS = [
   "linear-gradient(135deg,#0f172a,#1d4ed8)",
 ];
 const EMOJI = ["⚡","🚀","💡","🎯","🔥","💻"];
+const MAX_LECTURE_VIDEO_MB = 100;
 
 export default function InstructorDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -226,6 +227,11 @@ export default function InstructorDashboard() {
       return;
     }
 
+    if (video.size > MAX_LECTURE_VIDEO_MB * 1024 * 1024) {
+      setBuilderMsg({ type:"error", text:`Lecture video is too large. Please upload a file under ${MAX_LECTURE_VIDEO_MB}MB.` });
+      return;
+    }
+
     try {
       setAddingLecture(true);
       const fd = new FormData();
@@ -243,14 +249,20 @@ export default function InstructorDashboard() {
         credentials: "include",
         body: fd,
       });
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await res.json()
+        : { success: false, message: await res.text() };
 
-      if (data.success) {
+      if (res.ok && data.success) {
         setBuilderMsg({ type:"success", text:"Lecture video added successfully." });
         setLectureForm((prev) => ({ ...prev, title:"", timeDuration:"", description:"" }));
         if (lectureVideoRef.current) lectureVideoRef.current.value = "";
       } else {
-        setBuilderMsg({ type:"error", text: data.message || "Failed to add lecture." });
+        const statusMessage = res.status === 413
+          ? `Lecture video is too large. Please upload a file under ${MAX_LECTURE_VIDEO_MB}MB.`
+          : "Failed to add lecture.";
+        setBuilderMsg({ type:"error", text: data.message || statusMessage });
       }
     } catch {
       setBuilderMsg({ type:"error", text:"Server error while adding lecture." });

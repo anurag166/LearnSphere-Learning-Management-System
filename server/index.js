@@ -15,6 +15,8 @@ import { cloudinaryConnect } from "./config/cloudinary.js";
 dotenv.config();
 
 const app = express();
+const maxUploadMb = Number(process.env.MAX_VIDEO_UPLOAD_MB || 100);
+const maxUploadBytes = maxUploadMb * 1024 * 1024;
 
 const normalizeOrigin = (origin) => origin?.trim().replace(/\/$/, "");
 
@@ -89,6 +91,14 @@ app.use(
   fileUpload({
     useTempFiles: true,
     tempFileDir: os.tmpdir(),
+    limits: { fileSize: maxUploadBytes },
+    abortOnLimit: true,
+    limitHandler: (req, res) => {
+      return res.status(413).json({
+        success: false,
+        message: `File too large. Max upload size is ${maxUploadMb}MB.`,
+      });
+    },
   })
 );
 
@@ -104,6 +114,24 @@ app.use("/api/v1/payment", paymentRoutes);
 // test route
 app.get("/", (req, res) => {
   res.json({ success: true, message: "Server running 🌱" });
+});
+
+app.use((err, req, res, next) => {
+  if (err?.status === 413 || err?.statusCode === 413 || err?.type === "entity.too.large") {
+    return res.status(413).json({
+      success: false,
+      message: `File too large. Max upload size is ${maxUploadMb}MB.`,
+    });
+  }
+
+  if (err) {
+    return res.status(err.statusCode || err.status || 500).json({
+      success: false,
+      message: err.message || "Internal server error",
+    });
+  }
+
+  return next();
 });
 
 const PORT = process.env.PORT || 4000;
