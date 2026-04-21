@@ -25,7 +25,7 @@ export default function HelpCenter() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: "80vh", padding: "48px 5%", background: "var(--bg1)", color: "var(--text1)" }}>
+      <main style={{ minHeight: "80vh", padding: "110px 5% 48px", background: "var(--bg1)", color: "var(--text1)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <h1 style={{ margin: 0, fontSize: 34 }}>Help Center</h1>
           <p style={{ color: "var(--muted)", marginTop: 8 }}>Find quick answers and support resources.</p>

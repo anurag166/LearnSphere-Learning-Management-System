@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: "80vh", padding: "48px 5%", background: "var(--bg1)", color: "var(--text1)" }}>
+      <main style={{ minHeight: "80vh", padding: "110px 5% 48px", background: "var(--bg1)", color: "var(--text1)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: 20 }}>
           <h1 style={{ marginTop: 0 }}>Privacy Policy</h1>
           <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>
