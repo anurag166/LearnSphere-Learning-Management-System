@@ -32,8 +32,8 @@ export default function HelpCenter() {
 
           <section style={{ marginTop: 20, background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 14, padding: 20 }}>
             <h2 style={{ marginTop: 0 }}>Contact Support</h2>
-            <p style={{ color: "var(--muted)" }}>Email: <a href="mailto:support@learnsphere.com" style={{ color: "var(--accent2)", textDecoration: "none" }}>support@learnsphere.com</a></p>
-            <p style={{ color: "var(--muted)" }}>Phone: <a href="tel:+911800123456" style={{ color: "var(--accent2)", textDecoration: "none" }}>+91 1800 123 456</a></p>
+            <p style={{ color: "var(--muted)" }}>Email: <a href="mailto:anuragyadav31660@gmail.com" style={{ color: "var(--accent2)", textDecoration: "none" }}>anuragyadav31660@gmail.com</a></p>
+            <p style={{ color: "var(--muted)" }}>Phone: <a href="tel:+918950900612" style={{ color: "var(--accent2)", textDecoration: "none" }}>+91 8950900612</a></p>
           </section>
 
           <section style={{ marginTop: 16, display: "grid", gap: 12 }}>

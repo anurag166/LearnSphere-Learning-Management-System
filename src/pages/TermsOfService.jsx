@@ -19,7 +19,7 @@ export default function TermsOfService() {
           <h2>Instructor Content</h2>
           <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>Instructors are responsible for legality and originality of uploaded content.</p>
           <h2>Support</h2>
-          <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>Contact <a href="mailto:support@learnsphere.com" style={{ color: "var(--accent2)", textDecoration: "none" }}>support@learnsphere.com</a> for policy or account concerns.</p>
+          <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>Contact <a href="mailto:anuragyadav31660@gmail.com" style={{ color: "var(--accent2)", textDecoration: "none" }}>anuragyadav31660@gmail.com</a> for policy or account concerns.</p>
         </div>
       </main>
       <Footer />

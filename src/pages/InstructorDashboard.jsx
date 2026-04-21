@@ -294,7 +294,7 @@ export default function InstructorDashboard() {
       `User: ${user?.firstName || ""} ${user?.lastName || ""}\nEmail: ${userEmail}\n\nIssue:\n${supportForm.message.trim()}`
     );
 
-    window.location.href = `mailto:support@learnsphere.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:anuragyadav31660@gmail.com?subject=${subject}&body=${body}`;
     setSupportMsg({ type:"success", text:"Support draft opened in your email app." });
     setSupportForm((prev) => ({ ...prev, message: "" }));
   }
@@ -612,7 +612,7 @@ export default function InstructorDashboard() {
                 </div>
                 <div style={{ gridColumn:"1/-1", display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}>
                   <button type="submit" className={styles.btnCreate}>Submit Ticket</button>
-                  <a href="mailto:support@learnsphere.com" style={{ color:"var(--accent2)", textDecoration:"none" }}>Email support@learnsphere.com</a>
+                  <a href="mailto:anuragyadav31660@gmail.com" style={{ color:"var(--accent2)", textDecoration:"none" }}>Email anuragyadav31660@gmail.com</a>
                 </div>
               </form>
             </div>

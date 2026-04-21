@@ -107,7 +107,7 @@ export default function DashBoard() {
       `User: ${user?.firstName || ""} ${user?.lastName || ""}\nEmail: ${userEmail}\n\nIssue:\n${supportForm.message.trim()}`
     );
 
-    window.location.href = `mailto:support@learnsphere.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:anuragyadav31660@gmail.com?subject=${subject}&body=${body}`;
     setSupportMsg({ type:"success", text:"Support draft opened in your email app." });
     setSupportForm((prev) => ({ ...prev, message: "" }));
   }
@@ -236,8 +236,8 @@ export default function DashBoard() {
                   For urgent issues, include your course name and screenshot details.
                 </p>
                 <div style={{ display:"grid", gap:10, marginTop:14 }}>
-                  <a href="mailto:support@learnsphere.com" style={{ color:"var(--accent2)", textDecoration:"none" }}>Email: support@learnsphere.com</a>
-                  <a href="tel:+911800123456" style={{ color:"var(--accent2)", textDecoration:"none" }}>Phone: +91 1800 123 456</a>
+                  <a href="mailto:anuragyadav31660@gmail.com" style={{ color:"var(--accent2)", textDecoration:"none" }}>Email: anuragyadav31660@gmail.com</a>
+                  <a href="tel:+918950900612" style={{ color:"var(--accent2)", textDecoration:"none" }}>Phone: +91 8950900612</a>
                   <Link to="/help-center" style={{ color:"var(--accent2)", textDecoration:"none" }}>Open Help Center →</Link>
                 </div>
               </div>
