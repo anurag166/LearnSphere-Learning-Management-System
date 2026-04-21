@@ -22,6 +22,12 @@ export default function DashBoard() {
   const [profile, setProfile] = useState({ gender:"", dob:"", contactNumber:"", about:"" });
   const [profileMsg, setProfileMsg] = useState({ type:"", text:"" });
   const [pwMsg, setPwMsg] = useState({ type:"", text:"" });
+  const [supportMsg, setSupportMsg] = useState({ type:"", text:"" });
+  const [supportForm, setSupportForm] = useState({
+    topic: "Course Access",
+    priority: "Medium",
+    message: "",
+  });
   const [oldPw, setOldPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
@@ -84,6 +90,26 @@ export default function DashBoard() {
         : { type:"error", text: data.message || "Failed." });
       if (data.success) { setOldPw(""); setNewPw(""); setConfirmPw(""); }
     } catch { setPwMsg({ type:"error", text:"Server error." }); }
+  }
+
+  function submitSupport(e) {
+    e.preventDefault();
+    setSupportMsg({ type:"", text:"" });
+
+    if (!supportForm.message.trim()) {
+      setSupportMsg({ type:"error", text:"Please describe your issue before submitting." });
+      return;
+    }
+
+    const userEmail = user?.email || "";
+    const subject = encodeURIComponent(`[${supportForm.priority}] ${supportForm.topic}`);
+    const body = encodeURIComponent(
+      `User: ${user?.firstName || ""} ${user?.lastName || ""}\nEmail: ${userEmail}\n\nIssue:\n${supportForm.message.trim()}`
+    );
+
+    window.location.href = `mailto:support@learnsphere.com?subject=${subject}&body=${body}`;
+    setSupportMsg({ type:"success", text:"Support draft opened in your email app." });
+    setSupportForm((prev) => ({ ...prev, message: "" }));
   }
 
   const initials = user ? `${user.firstName?.[0]||""}${user.lastName?.[0]||""}`.toUpperCase() : "?";
@@ -196,6 +222,60 @@ export default function DashBoard() {
                 </div>
                 <button type="submit" className={styles.btnSave}>Update Password</button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "support" && (
+          <div>
+            <div className={styles.dashHeader}><h1>Support</h1><p>Get help with courses, payments, and account issues.</p></div>
+            <div className={styles.twoCol}>
+              <div className={styles.panel}>
+                <h3>Quick Help</h3>
+                <p style={{ color:"var(--muted)", fontSize:"0.85rem", lineHeight:1.6 }}>
+                  For urgent issues, include your course name and screenshot details.
+                </p>
+                <div style={{ display:"grid", gap:10, marginTop:14 }}>
+                  <a href="mailto:support@learnsphere.com" style={{ color:"var(--accent2)", textDecoration:"none" }}>Email: support@learnsphere.com</a>
+                  <a href="tel:+911800123456" style={{ color:"var(--accent2)", textDecoration:"none" }}>Phone: +91 1800 123 456</a>
+                  <Link to="/help-center" style={{ color:"var(--accent2)", textDecoration:"none" }}>Open Help Center →</Link>
+                </div>
+              </div>
+
+              <div className={styles.panel}>
+                <h3>Raise a Ticket</h3>
+                {supportMsg.text && <div className={`alert alert-${supportMsg.type}`} style={{ marginBottom: 12 }}>{supportMsg.text}</div>}
+                <form onSubmit={submitSupport}>
+                  <div className="form-group">
+                    <label>Topic</label>
+                    <select value={supportForm.topic} onChange={(e)=>setSupportForm({...supportForm,topic:e.target.value})}>
+                      <option>Course Access</option>
+                      <option>Payment Issue</option>
+                      <option>Video Playback</option>
+                      <option>Account & Login</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Priority</label>
+                    <select value={supportForm.priority} onChange={(e)=>setSupportForm({...supportForm,priority:e.target.value})}>
+                      <option>Low</option>
+                      <option>Medium</option>
+                      <option>High</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Issue Details</label>
+                    <textarea
+                      rows={5}
+                      placeholder="Describe what is not working..."
+                      value={supportForm.message}
+                      onChange={(e)=>setSupportForm({...supportForm,message:e.target.value})}
+                    />
+                  </div>
+                  <button type="submit" className={styles.btnSave}>Submit Ticket</button>
+                </form>
+              </div>
             </div>
           </div>
         )}

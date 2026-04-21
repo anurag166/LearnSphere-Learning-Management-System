@@ -108,15 +108,27 @@ export default function ViewCourse() {
                   <p style={{ margin: "0 0 12px", color: "var(--muted)", fontSize: 14 }}>
                     {activeLecture.sectionName} • {activeLecture.timeDuration || "--:--"}
                   </p>
-                  <video
-                    key={activeLecture._id || `${activeLecture.sectionIndex}-${activeLecture.lectureIndex}`}
-                    controls
-                    preload="metadata"
-                    src={activeLecture.videoUrl}
-                    style={{ width: "100%", borderRadius: 10, background: "#000" }}
+                  <div
+                    style={{
+                      width: "100%",
+                      maxWidth: 780,
+                      aspectRatio: "16 / 9",
+                      maxHeight: 420,
+                      borderRadius: 10,
+                      overflow: "hidden",
+                      background: "#000",
+                    }}
                   >
-                    Your browser does not support the video tag.
-                  </video>
+                    <video
+                      key={activeLecture._id || `${activeLecture.sectionIndex}-${activeLecture.lectureIndex}`}
+                      controls
+                      preload="metadata"
+                      src={activeLecture.videoUrl}
+                      style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
                   {activeLecture.description ? (
                     <p style={{ margin: "12px 0 0", color: "var(--muted)", fontSize: 14 }}>
                       {activeLecture.description}

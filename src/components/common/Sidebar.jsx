@@ -61,6 +61,12 @@ export default function Sidebar({ activeTab, onTabChange, isInstructor }) {
         >
           <span className={styles.icon}>🔒</span>Security
         </button>
+        <button
+          className={`${styles.navItem} ${activeTab === "support" ? styles.active : ""}`}
+          onClick={() => onTabChange("support")}
+        >
+          <span className={styles.icon}>💬</span>Support
+        </button>
       </nav>
       <div className={styles.bottom}>
         <div className={styles.userInfo}>

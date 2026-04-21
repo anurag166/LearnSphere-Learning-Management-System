@@ -23,6 +23,12 @@ export default function InstructorDashboard() {
   const [user, setUser] = useState(null);
   const [createMsg, setCreateMsg] = useState({ type:"", text:"" });
   const [builderMsg, setBuilderMsg] = useState({ type:"", text:"" });
+  const [supportMsg, setSupportMsg] = useState({ type:"", text:"" });
+  const [supportForm, setSupportForm] = useState({
+    topic: "Course Builder",
+    priority: "Medium",
+    message: "",
+  });
   const [creating, setCreating] = useState(false);
   const [addingSection, setAddingSection] = useState(false);
   const [addingLecture, setAddingLecture] = useState(false);
@@ -271,6 +277,26 @@ export default function InstructorDashboard() {
     } finally {
       setAddingLecture(false);
     }
+  }
+
+  function submitSupport(e) {
+    e.preventDefault();
+    setSupportMsg({ type:"", text:"" });
+
+    if (!supportForm.message.trim()) {
+      setSupportMsg({ type:"error", text:"Please describe your issue before submitting." });
+      return;
+    }
+
+    const userEmail = user?.email || "";
+    const subject = encodeURIComponent(`[Instructor][${supportForm.priority}] ${supportForm.topic}`);
+    const body = encodeURIComponent(
+      `User: ${user?.firstName || ""} ${user?.lastName || ""}\nEmail: ${userEmail}\n\nIssue:\n${supportForm.message.trim()}`
+    );
+
+    window.location.href = `mailto:support@learnsphere.com?subject=${subject}&body=${body}`;
+    setSupportMsg({ type:"success", text:"Support draft opened in your email app." });
+    setSupportForm((prev) => ({ ...prev, message: "" }));
   }
 
   function getDummy() {
@@ -547,6 +573,48 @@ export default function InstructorDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "support" && (
+          <div>
+            <div className={dashStyles.dashHeader}><h1>Support</h1><p>Get help with course publishing, uploads, payouts, and learner issues.</p></div>
+            <div className={styles.createPanel}>
+              {supportMsg.text && <div className={`alert alert-${supportMsg.type}`}>{supportMsg.text}</div>}
+              <form onSubmit={submitSupport} className={styles.formGrid}>
+                <div className="form-group">
+                  <label>Topic</label>
+                  <select value={supportForm.topic} onChange={(e)=>setSupportForm({...supportForm,topic:e.target.value})}>
+                    <option>Course Builder</option>
+                    <option>Lecture Upload</option>
+                    <option>Pricing & Revenue</option>
+                    <option>Student Enrollment</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Priority</label>
+                  <select value={supportForm.priority} onChange={(e)=>setSupportForm({...supportForm,priority:e.target.value})}>
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{gridColumn:"1/-1"}}>
+                  <label>Issue Details</label>
+                  <textarea
+                    rows={5}
+                    placeholder="Describe exactly what is failing and where..."
+                    value={supportForm.message}
+                    onChange={(e)=>setSupportForm({...supportForm,message:e.target.value})}
+                  />
+                </div>
+                <div style={{ gridColumn:"1/-1", display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}>
+                  <button type="submit" className={styles.btnCreate}>Submit Ticket</button>
+                  <a href="mailto:support@learnsphere.com" style={{ color:"var(--accent2)", textDecoration:"none" }}>Email support@learnsphere.com</a>
+                </div>
+              </form>
             </div>
           </div>
         )}
