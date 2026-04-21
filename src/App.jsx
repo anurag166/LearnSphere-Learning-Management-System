@@ -8,6 +8,7 @@ import Courses from "./pages/Courses";
 import CourseDetails from "./pages/CourseDetails";
 import DashBoard from "./pages/DashBoard";
 import InstructorDashboard from "./pages/InstructorDashboard";
+import ViewCourse from "./pages/ViewCourse";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -25,6 +26,9 @@ export default function App() {
 
       <Route path="/dashboard" element={
         <ProtectedRoute><DashBoard /></ProtectedRoute>
+      } />
+      <Route path="/view-course/:id" element={
+        <ProtectedRoute><ViewCourse /></ProtectedRoute>
       } />
       <Route path="/instructor-dashboard" element={
         <ProtectedRoute><InstructorDashboard /></ProtectedRoute>

@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../components/common/Sidebar";
 import { API_BASE_URL } from "../services/apis";
 import Profile from "./Profile";
@@ -15,6 +15,7 @@ const GRADIENTS = [
 const EMOJI = ["⚡","🚀","💡","🎯","🔥","💻"];
 
 export default function DashBoard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [user, setUser] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
@@ -111,7 +112,12 @@ export default function DashBoard() {
                 <div className={styles.ecInstructor}>Enrolled Course</div>
                 <div className={styles.progressWrap}><div className={styles.progressBar} style={{width:`${prog}%`}} /></div>
                 <div className={styles.progressText}><span>{prog}% complete</span><span>{Math.floor(prog/10)} / 10 lessons</span></div>
-                <button className={styles.btnContinue}>Continue Learning →</button>
+                <button
+                  className={styles.btnContinue}
+                  onClick={() => navigate(`/view-course/${c._id}`)}
+                >
+                  Continue Learning →
+                </button>
               </div>
             </div>
           );
