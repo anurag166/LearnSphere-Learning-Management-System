@@ -42,7 +42,9 @@ export default function DashBoard() {
       if (data.success && data.data) {
         const p = data.data.additionalDetails || {};
         setProfile({ gender: p.gender||"", dob: p.dob ? p.dob.split("T")[0] : "", contactNumber: p.contactNumber||"", about: p.about||"" });
-        const enrolled = Array.isArray(data.data.courses) ? data.data.courses : [];
+        const enrolled = Array.isArray(data.data.courses)
+          ? data.data.courses
+          : (data.data.courses ? [data.data.courses] : []);
         if (enrolled.length) setEnrolledCourses(enrolled);
       }
     } catch {}

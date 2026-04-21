@@ -104,15 +104,35 @@ export const deleteAccount = async(req , res)=>{
 export const getAllUserDetails = async(req , res)=>{
     try {
         const id = req.user.id;
-        const userDetails = await User.findById(id).populate("additionalDetails")
+        const userDetails = await User.findById(id)
+            .populate("additionalDetails")
+            .populate("courses");
+
+        if (!userDetails) {
+            return res.status(404).json({
+                success: false,
+                message: 'user not found'
+            });
+        }
+
+        const normalizedCourses = Array.isArray(userDetails.courses)
+            ? userDetails.courses
+            : (userDetails.courses ? [userDetails.courses] : []);
+
+        const userPayload = userDetails.toObject();
+        userPayload.courses = normalizedCourses;
+
         return res.status(200).json({
             success: true,
             message: 'user details fetched successfully',
-            data: userDetails,
+            data: userPayload,
 
         })
     } catch (error) {
-        throw new ApiError(500,error.message)
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'failed to fetch user details'
+        });
     }
 }
 

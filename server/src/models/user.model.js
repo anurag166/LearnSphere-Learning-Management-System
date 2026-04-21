@@ -34,10 +34,12 @@ const userSchema = new Schema ({
         required: true,
         ref: "profile"
     },
-    courses: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "course"
-    },
+    courses: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "course"
+        }
+    ],
     courseProgress: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "courseProgress"
