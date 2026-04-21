@@ -1,6 +1,5 @@
 import { subSection } from "../models/subSection.model.js";
 import { Section } from "../models/section.model.js";
-import { ApiError } from "../utils/ApiErrors.js";
 import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 
 //create subsection
@@ -8,9 +7,12 @@ import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 export const createSubSection = async (req , res)=>{
     try {
         const {sectionId, title , timeDuration , description } = req.body;
-        const video = req.files.videoFile;
+        const video = req.files?.videoFile;
         if(!sectionId || !title || !timeDuration || !description|| !video){
-            throw new ApiError(400,"all fields are required");
+            return res.status(400).json({
+                success: false,
+                message: "all fields are required"
+            });
         }
 
         const uploadDetails = await uploadImageToCloudinary(video,process.env.FOLDER_NAME)
@@ -27,7 +29,14 @@ export const createSubSection = async (req , res)=>{
                 subSection: subSectionDetails._id,
             }},
             {new: true}
-        );
+        ).populate("subSection");
+
+        if (!updatedSection) {
+            return res.status(404).json({
+                success: false,
+                message: "section not found"
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -35,7 +44,10 @@ export const createSubSection = async (req , res)=>{
             updatedSection
         })
     } catch (error) {
-        throw new ApiError(500,error.message)
+        return res.status(error?.statusCode || 500).json({
+            success: false,
+            message: error?.message || "failed to create subsection"
+        });
     }
 }
 
@@ -46,12 +58,18 @@ export const updateSubSection = async(req,res)=>{
     try {
         const {sectionId, title , timeDuration , description } = req.body;
         const {subSectionId} = req.body;
-        const video = req.files.videoFile;
+        const video = req.files?.videoFile;
         if(!sectionId || !title || !timeDuration || !description|| !video){
-            throw new ApiError(400,"all fields are required");
+            return res.status(400).json({
+                success: false,
+                message: "all fields are required"
+            });
         }
         if(!subSectionId){
-            throw new ApiError(400,'no subsection exist')
+            return res.status(400).json({
+                success: false,
+                message: 'no subsection exist'
+            });
 
         }
         const uploadDetails = await uploadImageToCloudinary(video,process.env.FOLDER_NAME)
@@ -63,12 +81,14 @@ export const updateSubSection = async(req,res)=>{
         }
     ,
   { new: true })
-        const updatedSection = await Section.findByIdAndUpdate({_id: sectionId},
-            {$push:{
-                subSection: updateDetails._id,
-            }},
-            {new: true}
-        );
+        const updatedSection = await Section.findById(sectionId).populate("subSection");
+
+        if (!updateDetails || !updatedSection) {
+            return res.status(404).json({
+                success: false,
+                message: "subsection or section not found"
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -77,7 +97,10 @@ export const updateSubSection = async(req,res)=>{
         })
 
     } catch (error) {
-        throw new ApiError(500,error.message)
+        return res.status(error?.statusCode || 500).json({
+            success: false,
+            message: error?.message || "failed to update subsection"
+        });
     }
 }
 //delete subSection
@@ -86,15 +109,26 @@ export const deleteSubSection = async (req ,res)=>{
     try {
         const {subSectionId,sectionId} = req.body
         if(!subSectionId){
-            throw new ApiError(400,'no subsection found ')
+            return res.status(400).json({
+                success: false,
+                message: 'no subsection found '
+            });
 
         }
         await subSection.findByIdAndDelete(subSectionId);
+        if (sectionId) {
+            await Section.findByIdAndUpdate(sectionId, {
+                $pull: { subSection: subSectionId }
+            });
+        }
         return res.status(200).json({
             success: true,
             message: 'subsection deleted successfully'
         })
     } catch (error) {
-        throw new ApiError(500,error.message)
+        return res.status(error?.statusCode || 500).json({
+            success: false,
+            message: error?.message || "failed to delete subsection"
+        });
     }
 }
