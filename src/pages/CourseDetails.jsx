@@ -61,7 +61,8 @@ export default function CourseDetails() {
     try {
       const res = await fetch(`${API_BASE_URL}/course/getAllRatingAndReviews/${id}`);
       const data = await res.json();
-      if (data.success && data.data?.length) { setReviews(data.data); return; }
+      const reviewList = Array.isArray(data.data) ? data.data : [];
+      if (data.success && reviewList.length) { setReviews(reviewList); return; }
     } catch {}
     setReviews([
       { _id:"r1", user:{firstName:"Rahul"}, rating:5, review:"Excellent course! Very practical and well-structured." },

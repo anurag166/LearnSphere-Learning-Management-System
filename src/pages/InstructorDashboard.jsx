@@ -69,7 +69,8 @@ export default function InstructorDashboard() {
       const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
       const data = await res.json();
       if (data.success) {
-        const mine = data.data.filter(c =>
+        const allCourses = Array.isArray(data.data) ? data.data : [];
+        const mine = allCourses.filter(c =>
           c.instructor?._id === u?._id || c.instructor === u?._id
         );
         setRealCourses(mine);
@@ -111,7 +112,8 @@ export default function InstructorDashboard() {
     try {
       const res = await fetch(`${API_BASE_URL}/course/getAllRatingAndReviews`);
       const data = await res.json();
-      if (data.success && data.data?.length) { setReviews(data.data); return; }
+      const reviewList = Array.isArray(data.data) ? data.data : [];
+      if (data.success && reviewList.length) { setReviews(reviewList); return; }
     } catch {}
     setReviews([
       {id:1,stars:5,text:"Absolutely brilliant course. The instructor explains complex concepts so clearly!",name:"Rahul K.",course:"Full Stack Web Development"},

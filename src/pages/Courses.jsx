@@ -45,7 +45,8 @@ export default function Courses() {
     try {
       const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
       const data = await res.json();
-      setAllCourses(data.success ? data.data : getDummy());
+      const courseList = data.success && Array.isArray(data.data) ? data.data : getDummy();
+      setAllCourses(courseList);
     } catch { setAllCourses(getDummy()); }
     setLoading(false);
   }
@@ -54,7 +55,8 @@ export default function Courses() {
     try {
       const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
       const data = await res.json();
-      if (data.success && data.data?.length) setCategories(data.data);
+      const categoryList = Array.isArray(data.data) ? data.data : [];
+      if (data.success && categoryList.length) setCategories(categoryList);
     } catch {}
   }
 

@@ -28,7 +28,8 @@ export default function Home() {
     try {
       const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
       const data = await res.json();
-      if (data.success && data.data.length) { setCourses(data.data.slice(0, 6)); }
+      const courseList = Array.isArray(data.data) ? data.data : [];
+      if (data.success && courseList.length) { setCourses(courseList.slice(0, 6)); }
       else setCourses(getDummy());
     } catch { setCourses(getDummy()); }
     setLoading(false);
@@ -38,8 +39,11 @@ export default function Home() {
     try {
       const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
       const data = await res.json();
-      if (data.success && (data.allCategory?.length || data.data?.length)) {
-        setCategories(data.allCategory || data.data);
+      const allCategory = Array.isArray(data.allCategory) ? data.allCategory : [];
+      const dataCategory = Array.isArray(data.data) ? data.data : [];
+      const categoryList = allCategory.length ? allCategory : dataCategory;
+      if (data.success && categoryList.length) {
+        setCategories(categoryList);
       }
     } catch {}
   }
