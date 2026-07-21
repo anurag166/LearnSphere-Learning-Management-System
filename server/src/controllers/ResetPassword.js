@@ -21,9 +21,15 @@ export const ResetPasswordToken = async(req , res)=>{
         console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
         const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-        await mailSender(user.email,
-            "Reset Password",
-             `Click the link below to reset your password:\n\n${resetUrl}\n\nThis link is valid for 5 minutes.`);
+        try {
+            await mailSender(user.email,
+                "Reset Password",
+                `Click the link below to reset your password:\n\n${resetUrl}\n\nThis link is valid for 5 minutes.`);
+        } catch (mailErr) {
+            console.error('mailSender error:', mailErr, 'keys:', Object.keys(mailErr || {}));
+            const errMsg = mailErr?.message || (typeof mailErr === 'object' ? JSON.stringify(mailErr) : String(mailErr));
+            return res.status(500).json({ success: false, message: `mail error: ${errMsg}` });
+        }
 
          return res.status(200).json({
       success: true,
