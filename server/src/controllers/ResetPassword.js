@@ -27,18 +27,16 @@ export const ResetPasswordToken = async(req , res)=>{
                 `Click the link below to reset your password:\n\n${resetUrl}\n\nThis link is valid for 5 minutes.`);
         } catch (mailErr) {
             console.error('mailSender error:', mailErr, 'keys:', Object.keys(mailErr || {}));
-            // Don't fail the whole request if email sending fails. Token is still saved.
-            return res.status(200).json({
-                success: true,
-                message:
-                    'Password reset token generated, but sending the email failed. Contact support or try again later.',
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to send password reset email. Please try again.',
             });
         }
 
-         return res.status(200).json({
-      success: true,
-      message: "Password reset link sent to email",
-    });
+        return res.status(200).json({
+            success: true,
+            message: 'Password reset link sent to email',
+        });
 
     } catch (error) {
         console.error("ResetPasswordToken error:", error);

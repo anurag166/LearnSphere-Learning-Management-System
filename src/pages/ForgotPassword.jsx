@@ -18,8 +18,12 @@ export default function ForgotPassword() {
     setLoading(true);
     try {
       const data = await apiConnector("POST", authEndpoints.RESET_PASSWORD_TOKEN, { email });
-      if (data.success) { setSuccess("Reset link sent! Check your email."); setStep(2); }
-      else setError(data.message || "Failed to send reset link.");
+      if (data.success) {
+        setSuccess(data.message || "Reset link sent! Check your email.");
+        setStep(2);
+      } else {
+        setError(data.message || "Failed to send reset link.");
+      }
     } catch { setError("Server error. Make sure the backend is running."); }
     setLoading(false);
   }
@@ -54,9 +58,15 @@ export default function ForgotPassword() {
           <div style={{textAlign:"center"}}>
             <div className={styles.successIcon}>📧</div>
             <h1 className={styles.h1}>Check Your Email</h1>
-            <p className={styles.subtitle}>We've sent a password reset link to <strong>{email}</strong>. Follow the link to set your new password.</p>
-            <Link to="/reset-password/token" className={styles.btn} style={{display:"block",marginTop:24,textAlign:"center",textDecoration:"none"}}>
-              Go to Reset Password →
+            <p className={styles.subtitle}>
+              We've sent a password reset link to <strong>{email}</strong>.
+              Open your email and use the link to reset your password.
+            </p>
+            <p className={styles.subtitle} style={{marginTop: 16}}>
+              If you prefer, you can also paste the reset token on the reset page at <strong>/reset-password</strong>.
+            </p>
+            <Link to="/reset-password" className={styles.btn} style={{display:"block",marginTop:24,textAlign:"center",textDecoration:"none"}}>
+              Open Reset Password Page →
             </Link>
           </div>
         )}
