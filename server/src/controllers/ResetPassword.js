@@ -31,7 +31,11 @@ export const ResetPasswordToken = async(req , res)=>{
     });
 
     } catch (error) {
-        throw new ApiError(500,'error while generating reset token')
+        console.error("ResetPasswordToken error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error?.message || 'error while generating reset token',
+        });
     }
 }
 
@@ -62,6 +66,10 @@ export const resetPassword = async (req,res)=>{
 
      })
     } catch (error) {
-        throw new ApiError(500,error.message)
+        console.error("resetPassword error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error?.message || 'Internal server error',
+        });
     }
 }
