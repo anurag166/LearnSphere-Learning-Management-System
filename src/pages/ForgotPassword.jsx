@@ -18,13 +18,20 @@ export default function ForgotPassword() {
     setLoading(true);
     try {
       const data = await apiConnector("POST", authEndpoints.RESET_PASSWORD_TOKEN, { email });
-      if (data.success) {
+      if (data?.success === true) {
         setSuccess(data.message || "Reset link sent! Check your email.");
         setStep(2);
       } else {
-        setError(data.message || "Failed to send reset link.");
+        setStep(1);
+        setError(data?.message || "Failed to send reset link.");
       }
-    } catch { setError("Server error. Make sure the backend is running."); }
+    } catch (error) {
+      setStep(1);
+      setError(
+        error?.response?.data?.message ||
+          "Server error. Make sure the backend is running."
+      );
+    }
     setLoading(false);
   }
 
