@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import os from "os";
+import net from "net";
 
 import courseRoutes from "./src/routes/Course.js";
 import userRoutes from "./src/routes/User.js";
@@ -114,6 +115,34 @@ app.use("/api/v1/payment", paymentRoutes);
 // test route
 app.get("/", (req, res) => {
   res.json({ success: true, message: "Server running 🌱" });
+});
+
+app.get("/debug/smtp", async (req, res) => {
+  const host = process.env.MAIL_HOST;
+  const port = Number(process.env.MAIL_PORT || 587);
+
+  if (!host) {
+    return res.status(500).json({ success: false, message: "MAIL_HOST is not set" });
+  }
+
+  const socket = net.createConnection(port, host);
+  socket.setTimeout(10000);
+
+  socket.on("connect", () => {
+    socket.end();
+    res.json({ success: true, message: `SMTP host reachable on ${host}:${port}` });
+  });
+
+  socket.on("timeout", () => {
+    socket.destroy();
+    res.status(504).json({ success: false, message: `Connection to ${host}:${port} timed out` });
+  });
+
+  socket.on("error", (error) => {
+    socket.destroy();
+    const errText = error?.message || error?.code || String(error) || "unknown error";
+    res.status(502).json({ success: false, message: `SMTP connection failed: ${errText}` });
+  });
 });
 
 app.use((err, req, res, next) => {

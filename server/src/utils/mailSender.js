@@ -14,7 +14,8 @@ const buildHtml = (title, body) => ` <div style="font-family: Arial, sans-serif;
 </div>`
 
 const sendViaSmtp = async (email, title, body) => {
-    const requiredMailVars = ['MAIL_HOST', 'MAIL_PORT', 'MAIL_USER', 'MAIL_PASS']
+    // Require host/user/pass. MAIL_PORT is optional and defaults to 587.
+    const requiredMailVars = ['MAIL_HOST', 'MAIL_USER', 'MAIL_PASS']
     const missingMailVars = requiredMailVars.filter((key) => !process.env[key])
     if (missingMailVars.length > 0) {
         throw new ApiError(500, `Missing SMTP configuration: ${missingMailVars.join(', ')}`)
@@ -52,7 +53,7 @@ const sendViaSmtp = async (email, title, body) => {
 
 const mailSender = async (email, title, body) => {
     try {
-        const requiredMailVars = ['MAIL_HOST', 'MAIL_PORT', 'MAIL_USER', 'MAIL_PASS']
+        const requiredMailVars = ['MAIL_HOST', 'MAIL_USER', 'MAIL_PASS']
         const missingMailVars = requiredMailVars.filter((key) => !process.env[key])
         if (missingMailVars.length > 0) {
             throw new ApiError(500, `Missing SMTP configuration: ${missingMailVars.join(', ')}`)
