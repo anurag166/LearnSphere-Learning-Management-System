@@ -139,8 +139,8 @@ npm run build
 
 ## 🌐 Live Demo
 
-- Frontend: `https://studynotion-mu-five.vercel.app/`
-- Backend: `https://studynotion-learning-management-system.onrender.com`
+- Frontend: https://studynotion-mu-five.vercel.app/
+- Backend: https://studynotion-learning-management-system.onrender.com
 
 ## 📄 License
 
