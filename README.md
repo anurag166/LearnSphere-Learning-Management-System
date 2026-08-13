@@ -6,6 +6,9 @@ A full-stack ed-tech web app where students can browse and buy courses, and inst
 
 <img width="1910" height="917" alt="image" src="https://github.com/user-attachments/assets/8af06a44-9de3-443a-bb17-9d334f7761a5" />
 
+## Local Development
+
+Run the frontend and backend separately during development.
 
 ## ✨ Features
 
