@@ -44,26 +44,62 @@ export default function Profile() {
 
   useEffect(() => {
     if (!token) {
+      console.log("No token found, redirecting to login");
       navigate("/login");
       return;
     }
 
     const fetchProfile = async () => {
       try {
+        console.log("Fetching profile from:", profileEndpoints.GET_USER_DETAILS);
+        
         const res = await apiConnector("GET", profileEndpoints.GET_USER_DETAILS, null, {
           Authorization: `Bearer ${token}`,
         });
 
-        const userData = res.data;
+        console.log("Raw API Response:", res);
+        console.log("Response keys:", Object.keys(res || {}));
+        
+        // Handle different response structures
+        let userData = null;
+        if (res?.data && typeof res.data === 'object') {
+          // Response wrapped in { data: {...} }
+          userData = res.data;
+          console.log("Using res.data:", userData);
+        } else if (res?._id || res?.email || res?.firstName) {
+          // Response IS the user object directly
+          userData = res;
+          console.log("Using res directly:", userData);
+        } else if (res?.success && res?.data) {
+          // Standard API response format
+          userData = res.data;
+          console.log("Using res.data from success response:", userData);
+        }
+
         if (!userData) {
+          console.error("Failed to extract user data. Response structure:", JSON.stringify(res));
+          setLoading(false);
           return;
         }
 
+        if (!userData._id) {
+          console.error("User data missing _id field. Data:", userData);
+          setLoading(false);
+          return;
+        }
+
+        console.log("Setting user state with:", userData);
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
       } catch (err) {
-        console.error("PROFILE FETCH ERROR:", err);
-        navigate("/login");
+        console.error("PROFILE FETCH ERROR - Full error:", err);
+        console.error("Error response:", err.response?.data);
+        console.error("Error status:", err.response?.status);
+        console.error("Error message:", err.message);
+        if (err.response?.status === 401) {
+          console.log("Unauthorized, redirecting to login");
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
@@ -197,7 +233,7 @@ export default function Profile() {
         throw lastError || new Error("Upload endpoint not found");
       }
 
-      const updatedUser = res.data || res.user || res.updatedUser;
+      const updatedUser = res?.data || res?.user || res?.updatedUser || res;
       if (updatedUser) {
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -237,7 +273,7 @@ export default function Profile() {
         }
       );
 
-      const updatedDetails = res.profileDetails || res.data?.additionalDetails || res.data;
+      const updatedDetails = res?.profileDetails || res?.data?.additionalDetails || res?.data || res;
       setUser((prev) => {
         const nextUser = {
           ...prev,
@@ -266,8 +302,9 @@ export default function Profile() {
     return <div className={styles.error}>Failed to load profile.</div>;
   }
 
-  const profile = user.additionalDetails || {};
-  const accountInitials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`;
+  const profile = user?.additionalDetails || {};
+  const accountInitials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase();
+
 
   return (
     <div className={styles.page}>
@@ -277,7 +314,7 @@ export default function Profile() {
       <div className={styles.profileShell}>
         <section className={styles.heroCard}>
           <div className={styles.avatarBlock}>
-            {user.profileImage ? (
+            {user?.profileImage ? (
               <img src={previewImage || toHttpsUrl(user.profileImage)} alt="profile" className={styles.avatar} />
             ) : (
               <div className={styles.avatarFallback}>{accountInitials || "U"}</div>

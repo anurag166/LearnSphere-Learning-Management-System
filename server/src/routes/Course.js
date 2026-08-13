@@ -1,7 +1,10 @@
  import { Router } from "express";
  import {
     createCourse,
-    showAllCourses,getCourseDetails
+    showAllCourses,
+    getInstructorCourses,
+    getCourseDetails,
+    updateCourse,
  } from '../controllers/Course.js';
  import { createSection,updateSection,deleteSection } from "../controllers/Section.js";
  import {createSubSection,updateSubSection,deleteSubSection} from "../controllers/Subsection.js"
@@ -14,7 +17,9 @@ const router = Router();
 
  router.post("/createCourse",auth ,isInstructor,createCourse);
  router.get("/showAllCourses",showAllCourses);
+ router.get("/getInstructorCourses",auth, isInstructor, getInstructorCourses);
  router.get("/getCourseDetails/:id",getCourseDetails);
+ router.put("/updateCourse/:id",auth, isInstructor, updateCourse);
  router.post("/createCategory",createCategory);
  
  router.get("/showAllCategory",showAllCategory);
@@ -29,6 +34,7 @@ const router = Router();
 
 
  router.post("/createRatingAndReview",auth,createRatingAndReview)
+ router.get("/getAverageRating/:id",getAverageRating)
  router.get("/getAverageRating",getAverageRating)
  router.get("/getAllRatingAndReviews/:id",getAllRatingAndReviews)
  router.get("/getAllRatingAndReviews",getAllRatingAndReviews)

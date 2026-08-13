@@ -47,10 +47,12 @@ const courseSchema = new Schema({
         introVideoUrl: {
             type: String,
         },
-    RatingandReviews: {
-       type: mongoose.Schema.Types.ObjectId,
-       ref: 'RatingAndReviews'
-    },
+    ratingsAndReviews: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'RatingAndReviews'
+        }
+    ],
     price: {
         type: Number,
         required: true
@@ -62,13 +64,14 @@ const courseSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'category'
     },
+    studentsEnrolled:[ {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     studentEnrolled:[ {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-
-    }
-]
+        ref: 'User'
+    }]
 
 })
 

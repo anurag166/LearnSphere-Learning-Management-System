@@ -21,6 +21,7 @@ router.post("/changepassword",auth,changePass);
 
 //router for sendOtp
 router.post("/sendotp",sendOTP)
+router.post("/sendOTP",sendOTP)
 router.post("/reset-password-token",ResetPasswordToken)
 router.post("/reset-password",resetPassword)
 

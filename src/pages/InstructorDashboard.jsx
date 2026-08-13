@@ -1,5 +1,6 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/common/Sidebar";
 import styles from "./InstructorDashboard.module.css";
 import dashStyles from "./DashBoard.module.css";
@@ -13,6 +14,7 @@ const GRADIENTS = [
 const EMOJI = ["⚡","🚀","💡","🎯","🔥","💻"];
 
 export default function InstructorDashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -48,17 +50,19 @@ export default function InstructorDashboard() {
 
   async function loadCourses(u) {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/course/showAllCourses");
+      const res = await fetch("http://localhost:4000/api/v1/course/getInstructorCourses", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
-      if (data.success) {
-        const mine = data.data.filter(c =>
-          c.instructor?._id === u?._id || c.instructor === u?._id
-        );
-        setCourses(mine.length ? mine : getDummy());
+      console.log("📚 Instructor courses loaded:", data);
+      if (data.success && Array.isArray(data.data)) {
+        setCourses(data.data);
         return;
       }
-    } catch {}
-    setCourses(getDummy());
+    } catch (err) {
+      console.error("❌ Error loading courses:", err);
+    }
+    setCourses([]);
   }
 
   async function loadReviews() {
@@ -110,15 +114,8 @@ export default function InstructorDashboard() {
     setCreating(false);
   }
 
-  function getDummy() {
-    return [
-      {_id:"d1",courseName:"Full Stack Web Development",courseDescription:"Complete MERN stack course",price:999,studentsEnrolled:[...Array(312)]},
-      {_id:"d2",courseName:"React & Node.js Masterclass",courseDescription:"Advanced React patterns",price:799,studentsEnrolled:[...Array(245)]},
-    ];
-  }
-
-  const totalStudents = courses.reduce((s,c) => s+(c.studentsEnrolled?.length||0),0);
-  const revenue = courses.reduce((s,c) => s+(c.price||0)*(c.studentsEnrolled?.length||0),0);
+  const totalStudents = courses.reduce((s,c) => s+(c.enrolledCount||c.studentsEnrolled?.length||0),0);
+  const revenue = courses.reduce((s,c) => s+(c.price||0)*(c.enrolledCount||c.studentsEnrolled?.length||0),0);
 
   return (
     <div className={dashStyles.layout}>
@@ -154,7 +151,7 @@ export default function InstructorDashboard() {
                   <div className={styles.overviewThumb} style={{background:GRADIENTS[i%GRADIENTS.length]}}>{EMOJI[i%EMOJI.length]}</div>
                   <div style={{flex:1}}>
                     <div className={styles.overviewName}>{c.courseName}</div>
-                    <div className={styles.overviewMeta}>{c.studentsEnrolled?.length||0} students</div>
+                    <div className={styles.overviewMeta}>{c.enrolledCount||c.studentsEnrolled?.length||0} students</div>
                   </div>
                   <div className={styles.overviewPrice}>₹{c.price?.toLocaleString("en-IN")||0}</div>
                 </div>
@@ -186,9 +183,9 @@ export default function InstructorDashboard() {
                     </div>
                   </div>
                   <div className={styles.tdPrice}>₹{c.price?.toLocaleString("en-IN")||0}</div>
-                  <div className={styles.tdEnrolled}>{c.studentsEnrolled?.length||0}</div>
-                  <div className={styles.tdVal}>⭐ 4.8</div>
-                  <div><button className={styles.btnEdit}>Edit</button></div>
+                  <div className={styles.tdEnrolled}>{c.enrolledCount||c.studentsEnrolled?.length||0}</div>
+                  <div className={styles.tdVal}>⭐ {Number(c.averageRating||0).toFixed(1)}</div>
+                  <div><button className={styles.btnEdit} onClick={() => navigate(`/edit-course/${c._id}`)}>Edit</button></div>
                 </div>
               ))}
             </div>

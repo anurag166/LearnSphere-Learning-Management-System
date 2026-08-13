@@ -1,6 +1,6 @@
 import mongoose,{Schema} from 'mongoose'
-import { ApiError } from '../utils/ApiErrors.js'
 import { mailSender } from '../utils/mailSender.js'
+
 const otpSchema = new Schema({
     email: {
         type: String,
@@ -17,19 +17,29 @@ const otpSchema = new Schema({
     }
 },{timestamps: true})
 
-async function sendVerificationMail(email,otp){
-    try {
-        const mailResponse = await mailSender(email,"Verification email from StudyNotion",otp);
-        console.log("email sent successfully")
+async function sendVerificationMail(email, otp) {
+    if (process.env.SKIP_OTP_EMAIL === "true") {
+        console.log("Skipping OTP email delivery because SKIP_OTP_EMAIL=true");
+        return false;
+    }
 
+    try {
+        await mailSender(email, "Verification email from StudyNotion", otp);
+        console.log("email sent successfully");
+        return true;
     } catch (error) {
-        console.error("REAL MAIL ERROR ", error);
-        throw new ApiError(500,error.message)
+        console.warn("OTP email could not be sent; continuing without blocking signup:", error?.message || error);
+        return false;
     }
 }
 
-otpSchema.pre("save",async function (next) {
-    await sendVerificationMail(this.email,this.otp);
+otpSchema.pre("save", async function (next) {
+    try {
+        await sendVerificationMail(this.email, this.otp);
+    } catch (error) {
+        console.warn("OTP pre-save hook failed:", error?.message || error);
+    }
     next();
 })
+
 export const otp= mongoose.model("otp",otpSchema)

@@ -80,7 +80,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 
-
+app.use("/api/v1/payment/verifySignature", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(cookieParser());
 

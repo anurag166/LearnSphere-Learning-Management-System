@@ -33,6 +33,13 @@ export default function DashBoard() {
   const [confirmPw, setConfirmPw] = useState("");
   const token = localStorage.getItem("token");
 
+  const learningTime = user?.learningTime ?? user?.learningTimeHours ?? "0h";
+  const certificates = typeof user?.certificates === "number" ? user.certificates : 0;
+  const dayStreak = typeof user?.streak === "number" ? user.streak : 0;
+  const learningTimeChange = user?.learningTimeChange || user?.learningTimeSummary || "Track your progress in the app.";
+  const certificatesChange = user?.certificateSummary || user?.certificateMessage || "Earn certificates by completing courses.";
+  const streakMessage = user?.streakMessage || user?.streakSummary || "Keep learning to build your streak.";
+
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem("user") || "null");
     setUser(u);
@@ -167,9 +174,9 @@ export default function DashBoard() {
             <div className={styles.statsRow}>
               {[
                 {icon:"📚",num:enrolledCourses.length || 0,lbl:"Enrolled Courses",change:"Total enrolled"},
-                {icon:"⏱",num:"24h",lbl:"Learning Time",change:"↑ 3h this week",up:true},
-                {icon:"🏆",num:2,lbl:"Certificates",change:"↑ 1 this month",up:true},
-                {icon:"🔥",num:7,lbl:"Day Streak",change:"Keep it up!",up:true},
+                {icon:"⏱",num:learningTime,lbl:"Learning Time",change:learningTimeChange,up:!!user?.learningTime},
+                {icon:"🏆",num:certificates,lbl:"Certificates",change:certificatesChange,up:!!user?.certificates},
+                {icon:"🔥",num:dayStreak,lbl:"Day Streak",change:streakMessage,up:!!user?.streak},
               ].map((s,i) => (
                 <div key={i} className={styles.statCard}>
                   <div className={styles.scIcon}>{s.icon}</div>
