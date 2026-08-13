@@ -12,8 +12,13 @@ export const auth = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, "Unauthorized request");
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  let decoded;
 
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (error) {
+    throw new ApiError(401, "Invalid or expired access token");
+  }
   const user = await User.findById(decoded.id).select("-password");
 
   if (!user) {
