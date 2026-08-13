@@ -8,22 +8,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  backdrop-filter: blur(20px);
-  background: rgba(10,10,15,0.85);
-  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  background: rgba(7, 10, 25, 0.82);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 12px 40px rgba(6, 8, 22, 0.25);
+}
+
+.logo {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.logo span {
+  color: var(--accent2);
 }
 
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 30px;
 }
 .navLinks a {
-  color: var(--muted);
-  font-size: 0.9rem;
-  transition: color 0.2s;
+  color: rgba(255,255,255,0.78);
+  font-size: 0.95rem;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
-.navLinks a:hover { color: var(--text); }
+.navLinks a:hover {
+  color: #fff;
+  transform: translateY(-1px);
+}
 
 .navCta {
   display: flex;
@@ -31,9 +46,14 @@
   gap: 12px;
 }
 
+.navCta .btn-ghost,
+.navCta .btn-primary {
+  white-space: nowrap;
+}
+
 .greeting {
-  color: var(--muted);
-  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.86rem;
 }
 
 @media (max-width: 900px) {

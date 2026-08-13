@@ -29,7 +29,12 @@ export default function Signup() {
       const data = await apiConnector("POST", authEndpoints.SEND_OTP, { email });
       if (data.success) { setSuccess("OTP sent to your email!"); setStep(2); }
       else setError(data.message || "Failed to send OTP.");
-    } catch { setError("Server error. Make sure the backend is running."); }
+    } catch (err) {
+      const serverMessage = err?.response?.data?.message;
+      if (serverMessage) setError(serverMessage);
+      else if (err?.request) setError("Couldn't reach the server. Check that the backend is running and VITE_API_BASE_URL is correct.");
+      else setError(err?.message || "Something went wrong.");
+    }
     setOtpSending(false);
   }
 
@@ -61,7 +66,12 @@ export default function Signup() {
       } else {
         setError(data.message || "Signup failed. Please try again.");
       }
-    } catch { setError("Server error. Make sure the backend is running."); }
+    } catch (err) {
+      const serverMessage = err?.response?.data?.message;
+      if (serverMessage) setError(serverMessage);
+      else if (err?.request) setError("Couldn't reach the server. Check that the backend is running and VITE_API_BASE_URL is correct.");
+      else setError(err?.message || "Something went wrong.");
+    }
     setLoading(false);
   }
 
@@ -185,5 +195,3 @@ export default function Signup() {
     </div>
   );
 }
-
-

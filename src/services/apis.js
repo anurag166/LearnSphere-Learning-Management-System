@@ -18,7 +18,7 @@ export const API_BASE_URL = resolvedApiBaseUrl.replace(/\/$/, "");
 const BASE_URL = `${API_BASE_URL}/`;
 
 export const authEndpoints = {
-  SEND_OTP: `${BASE_URL}auth/sendOTP`,
+  SEND_OTP: `${BASE_URL}auth/sendotp`,
   SIGNUP: `${BASE_URL}auth/signup`,
   LOGIN: `${BASE_URL}auth/login`,
   RESET_PASSWORD_TOKEN: `${BASE_URL}auth/reset-password-token`,
@@ -37,4 +37,5 @@ export const courseEndpoints = {
   GET_COURSE_DETAILS: (id) => `${BASE_URL}course/getCourseDetails/${id}`,
   CREATE_COURSE: `${BASE_URL}course/createCourse`,
   GET_ALL_REVIEWS: `${BASE_URL}course/getAllRatingAndReviews`,
+  GET_AVERAGE_RATING: (id) => `${BASE_URL}course/getAverageRating/${id}`,
 };

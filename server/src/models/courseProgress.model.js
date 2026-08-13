@@ -14,4 +14,4 @@ const courseProgressSchema= new Schema({
 
 
 
-export const courseProgress=mongoose.model(courseProgress,"courseProgressSchema")
+export const courseProgress=mongoose.model("courseProgress",courseProgressSchema)

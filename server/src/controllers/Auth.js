@@ -15,9 +15,10 @@ const generateOTP = customAlphabet("1234567890", 6);
 export const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
     // Check if user already exists
-    const checkUserPresent = await User.findOne({ email });
+    const checkUserPresent = await User.findOne({ email: normalizedEmail });
     if (checkUserPresent) {
       return res.status(400).json({
         success: false,
@@ -29,7 +30,7 @@ export const sendOTP = async (req, res) => {
     const otpCode = generateOTP();
     console.log("OTP generated successfully:", otpCode);
 
-    const otpPayload = { email, otp: otpCode };
+    const otpPayload = { email: normalizedEmail, otp: otpCode };
 
     // Create OTP entry in DB
     const otpBody = await otp.create(otpPayload);
@@ -66,20 +67,21 @@ export const signUp = async (req ,res )=>{
             accountType,
             otp: enteredOtp
         }=req.body;
+        const normalizedEmail = String(email || "").trim().toLowerCase();
     
         //validatr
-        if(!firstName||!lastName|| !email ||!password||!enteredOtp||!confirmPassword){
+        if(!firstName||!lastName|| !normalizedEmail ||!password||!enteredOtp||!confirmPassword){
             throw new ApiError(403,"all fields are required")
         }
     
         //check if user exists
-        const existingUser = await User.findOne({email});
+        const existingUser = await User.findOne({email: normalizedEmail});
         if(existingUser){
             console.log("user already reg")
             throw new ApiError(400,"user already registered")
         }
         //otp recent stored
-        const recentOtp = await otp.findOne({email}).sort({createdAt: -1})
+        const recentOtp = await otp.findOne({ email: normalizedEmail }).sort({ createdAt: -1 });
         if(!recentOtp){
             throw new ApiError(400,"otp not found")
     
@@ -105,7 +107,7 @@ export const signUp = async (req ,res )=>{
             lastName,
             email,
             password: hashPassword,
-            accountType,
+            accountType: accountType || "Student",
             additionalDetails: profileDetails._id,
             profileImage: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
         })

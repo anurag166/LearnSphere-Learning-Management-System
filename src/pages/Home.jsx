@@ -19,9 +19,39 @@ export default function Home() {
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [heroWordIndex, setHeroWordIndex] = useState(0);
+  const [studentCount, setStudentCount] = useState(0);
+  const [courseCount, setCourseCount] = useState(0);
+  const [ratingValue, setRatingValue] = useState(0);
 
   useEffect(() => {
     Promise.all([fetchCourses(), fetchCategories()]);
+  }, []);
+
+  useEffect(() => {
+    const wordTimer = window.setInterval(() => {
+      setHeroWordIndex((prev) => (prev + 1) % heroWords.length);
+    }, 2800);
+
+    const duration = 900;
+    const startTime = performance.now();
+    let animationId;
+
+    const animate = (timestamp) => {
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setStudentCount(Math.floor(12000 * progress));
+      setCourseCount(Math.max(1, Math.floor(220 * progress)));
+      setRatingValue(4.5 + 0.3 * progress);
+      if (progress < 1) {
+        animationId = window.requestAnimationFrame(animate);
+      }
+    };
+
+    animationId = window.requestAnimationFrame(animate);
+    return () => {
+      window.clearInterval(wordTimer);
+      window.cancelAnimationFrame(animationId);
+    };
   }, []);
 
   async function fetchCourses() {
@@ -70,6 +100,8 @@ export default function Home() {
   const displayCats = categories.length ? categories : defaultCategories;
   const catIcons = ["💻","📱","🤖","🎨","☁️","📊","🔐","📡"];
 
+  const heroWords = ["skills", "confidence", "a career", "real projects"];
+
   return (
     <>
       <Navbar />
@@ -77,11 +109,14 @@ export default function Home() {
         {/* HERO */}
         <section className={styles.hero}>
           <div className={styles.heroBg} />
+          <div className={styles.heroGlow} />
+          <div className={styles.heroShape} />
+          <div className={styles.heroShapeTwo} />
           <div className={styles.heroGrid}>
             <div>
               <div className={`${styles.heroBadge} fade-up`}>India's fastest-growing EdTech platform</div>
               <h1 className={`${styles.heroH1} fade-up delay-1`}>
-                Learn without <em>limits</em>, grow without bounds
+                Learn without <em>{heroWords[heroWordIndex]}</em>, grow without bounds
               </h1>
               <p className={`${styles.heroSub} fade-up delay-2`}>
                 Expert-led courses in tech, design & business. Learn at your own pace, get certified, and advance your career.
@@ -91,9 +126,9 @@ export default function Home() {
                 <Link to="/signup" className={styles.btnOutline}>Become an Instructor →</Link>
               </div>
               <div className={`${styles.heroStats} fade-up delay-4`}>
-                <div className={styles.statItem}><div className={styles.statNum}>12K+</div><div className={styles.statLbl}>Students Enrolled</div></div>
-                <div className={styles.statItem}><div className={styles.statNum}>200+</div><div className={styles.statLbl}>Expert Courses</div></div>
-                <div className={styles.statItem}><div className={styles.statNum}>4.8★</div><div className={styles.statLbl}>Avg. Rating</div></div>
+                <div className={styles.statItem}><div className={styles.statNum}>{studentCount.toLocaleString()}+</div><div className={styles.statLbl}>Students Enrolled</div></div>
+                <div className={styles.statItem}><div className={styles.statNum}>{courseCount}+</div><div className={styles.statLbl}>Expert Courses</div></div>
+                <div className={styles.statItem}><div className={styles.statNum}>{ratingValue.toFixed(1)}★</div><div className={styles.statLbl}>Avg. Rating</div></div>
               </div>
             </div>
             <div className={`${styles.heroVisual} fade-up delay-2`}>
@@ -120,6 +155,46 @@ export default function Home() {
           </div>
         </section>
 
+        {/* BENEFITS */}
+        <section className={styles.benefitsSection}>
+          <div className={styles.sectionInner}>
+            <div className={styles.sectionRow}>
+              <div>
+                <div className={styles.sectionTag}>Why Choose LearnSphere</div>
+                <h2 className={styles.sectionTitle}>Learning that fits your goals</h2>
+                <p className={styles.benefitsIntro}>
+                  From career-ready projects to expert mentorship, LearnSphere helps you grow faster with the right guidance and real-world skills.
+                </p>
+              </div>
+              <div className={styles.benefitStats}>
+                <div className={styles.statPanel}>
+                  <div className={styles.statNum}>4.9/5</div>
+                  <div className={styles.statLbl}>Average course rating</div>
+                </div>
+                <div className={styles.statPanel}>
+                  <div className={styles.statNum}>80%</div>
+                  <div className={styles.statLbl}>Learners upgrade skills in 6 weeks</div>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.benefitGrid}>
+              {[
+                {icon:"🚀", title:"Project-Based Learning", text:"Build real products with guided hands-on lessons and live assignments."},
+                {icon:"🎓", title:"Verified Certificates", text:"Earn certificates you can showcase on resumes and profiles."},
+                {icon:"🤝", title:"Mentor Support", text:"Get one-on-one help from instructors and peer study groups."},
+                {icon:"⏱️", title:"Flexible Schedule", text:"Learn at your own pace with bite-sized lessons for busy learners."},
+              ].map((item, idx) => (
+                <div key={idx} className={styles.benefitCard}>
+                  <div className={styles.benefitIcon}>{item.icon}</div>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CATEGORIES */}
         <section className={styles.categoriesSection} id="categories">
           <div className={styles.sectionInner}>
@@ -133,6 +208,39 @@ export default function Home() {
                 <div key={cat._id} className={styles.catCard}>
                   <span className={styles.catIcon}>{cat.icon || catIcons[i % catIcons.length]}</span>
                   <div className={styles.catName}>{cat.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FEATURED INSTRUCTORS */}
+        <section className={styles.instructorSection}>
+          <div className={styles.sectionInner}>
+            <div className={styles.sectionRow}>
+              <div>
+                <div className={styles.sectionTag}>Meet Our Instructors</div>
+                <h2 className={styles.sectionTitle}>Top educators shaping your learning path</h2>
+              </div>
+              <Link to="/signup" className={styles.viewAll}>Become an instructor →</Link>
+            </div>
+            <div className={styles.instructorGrid}>
+              {[
+                {name:"Neha Joshi", title:"Data Science Mentor", bio:"Teaches data analytics and ML projects with real-world case studies.", score:"98%"},
+                {name:"Anurag Sharma", title:"Full Stack Lead", bio:"Builds practical web apps and deployment-ready portfolios.", score:"95%"},
+                {name:"Priya Patel", title:"UI/UX Expert", bio:"Designs high-conversion interfaces with a learner-first process.", score:"92%"},
+              ].map((inst, idx) => (
+                <div key={idx} className={styles.instructorCard}>
+                  <div className={styles.instructorAvatar}>{inst.name.split(" ").map(w=>w[0]).join("")}</div>
+                  <div className={styles.instructorMeta}>
+                    <div className={styles.instructorName}>{inst.name}</div>
+                    <div className={styles.instructorTitle}>{inst.title}</div>
+                  </div>
+                  <p>{inst.bio}</p>
+                  <div className={styles.instructorFooter}>
+                    <span>Course quality</span>
+                    <strong>{inst.score}</strong>
+                  </div>
                 </div>
               ))}
             </div>

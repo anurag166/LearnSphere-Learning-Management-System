@@ -67,14 +67,8 @@ export default function ForgotPassword() {
             <h1 className={styles.h1}>Check Your Email</h1>
             <p className={styles.subtitle}>
               We've sent a password reset link to <strong>{email}</strong>.
-              Open your email and use the link to reset your password.
+              Open the link in your inbox to reset your password.
             </p>
-            <p className={styles.subtitle} style={{marginTop: 16}}>
-              If you prefer, you can also paste the reset token on the reset page at <strong>/reset-password</strong>.
-            </p>
-            <Link to="/reset-password" className={styles.btn} style={{display:"block",marginTop:24,textAlign:"center",textDecoration:"none"}}>
-              Open Reset Password Page →
-            </Link>
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/common/Sidebar";
-import { API_BASE_URL } from "../services/apis";
 import styles from "./InstructorDashboard.module.css";
 import dashStyles from "./DashBoard.module.css";
 
@@ -12,43 +12,21 @@ const GRADIENTS = [
   "linear-gradient(135deg,#0f172a,#1d4ed8)",
 ];
 const EMOJI = ["⚡","🚀","💡","🎯","🔥","💻"];
-const MAX_LECTURE_VIDEO_MB = 100;
 
 export default function InstructorDashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [courses, setCourses] = useState([]);
-  const [realCourses, setRealCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [user, setUser] = useState(null);
   const [createMsg, setCreateMsg] = useState({ type:"", text:"" });
-  const [builderMsg, setBuilderMsg] = useState({ type:"", text:"" });
-  const [supportMsg, setSupportMsg] = useState({ type:"", text:"" });
-  const [supportForm, setSupportForm] = useState({
-    topic: "Course Builder",
-    priority: "Medium",
-    message: "",
-  });
   const [creating, setCreating] = useState(false);
-  const [addingSection, setAddingSection] = useState(false);
-  const [addingLecture, setAddingLecture] = useState(false);
   const thumbRef = useRef(null);
-  const lectureVideoRef = useRef(null);
   const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
     name:"", price:"", desc:"", whatYouWillLearn:"", category:"",
-    tags:"", instructions:"", level:"Beginner", language:"English",
-  });
-  const introVideoRef = useRef(null);
-  const [lessonCourseId, setLessonCourseId] = useState("");
-  const [sections, setSections] = useState([]);
-  const [sectionName, setSectionName] = useState("");
-  const [lectureForm, setLectureForm] = useState({
-    sectionId: "",
-    title: "",
-    timeDuration: "",
-    description: "",
   });
 
   useEffect(() => {
@@ -61,7 +39,7 @@ export default function InstructorDashboard() {
 
   async function loadCategories() {
     try {
-      const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
+      const res = await fetch("http://localhost:4000/api/v1/course/showAllCategory");
       const data = await res.json();
       const categoryList = data.allCategory || data.data || data.categories || [];
       if (data.success && Array.isArray(categoryList) && categoryList.length) {
@@ -72,54 +50,26 @@ export default function InstructorDashboard() {
 
   async function loadCourses(u) {
     try {
-      const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
+      const res = await fetch("http://localhost:4000/api/v1/course/getInstructorCourses", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
-      if (data.success) {
-        const allCourses = Array.isArray(data.data) ? data.data : [];
-        const mine = allCourses.filter(c =>
-          c.instructor?._id === u?._id || c.instructor === u?._id
-        );
-        setRealCourses(mine);
-        setCourses(mine.length ? mine : getDummy());
+      console.log("📚 Instructor courses loaded:", data);
+      if (data.success && Array.isArray(data.data)) {
+        setCourses(data.data);
         return;
       }
-    } catch {}
-    setRealCourses([]);
-    setCourses(getDummy());
-  }
-
-  async function loadCourseSections(courseId) {
-    if (!courseId) {
-      setSections([]);
-      return;
+    } catch (err) {
+      console.error("❌ Error loading courses:", err);
     }
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/course/getCourseDetails/${courseId}`);
-      const data = await res.json();
-      const courseData = data.data || {};
-      const content = Array.isArray(courseData.courseContent) ? courseData.courseContent : [];
-
-      const normalized = content.map((item, idx) => ({
-        _id: item?._id || item || `section-${idx}`,
-        sectionName: item?.sectionName || `Section ${idx + 1}`,
-      }));
-
-      setSections(normalized);
-      if (normalized.length && !lectureForm.sectionId) {
-        setLectureForm((prev) => ({ ...prev, sectionId: normalized[0]._id }));
-      }
-    } catch {
-      setSections([]);
-    }
+    setCourses([]);
   }
 
   async function loadReviews() {
     try {
-      const res = await fetch(`${API_BASE_URL}/course/getAllRatingAndReviews`);
+      const res = await fetch("http://localhost:4000/api/v1/course/getAllRatingAndReviews");
       const data = await res.json();
-      const reviewList = Array.isArray(data.data) ? data.data : [];
-      if (data.success && reviewList.length) { setReviews(reviewList); return; }
+      if (data.success && data.data?.length) { setReviews(data.data); return; }
     } catch {}
     setReviews([
       {id:1,stars:5,text:"Absolutely brilliant course. The instructor explains complex concepts so clearly!",name:"Rahul K.",course:"Full Stack Web Development"},
@@ -132,7 +82,6 @@ export default function InstructorDashboard() {
     e.preventDefault();
     setCreateMsg({ type:"", text:"" });
     const thumb = thumbRef.current?.files[0];
-    const introVideo = introVideoRef.current?.files[0];
     if (!form.name||!form.price||!form.desc||!form.category||!thumb) {
       setCreateMsg({ type:"error", text:"Please fill all required fields and upload a thumbnail." });
       return;
@@ -144,16 +93,9 @@ export default function InstructorDashboard() {
     fd.append("courseDescription", form.desc);
     fd.append("whatWillYouLearn", form.whatYouWillLearn);
     fd.append("category1", form.category);
-    fd.append("tags", form.tags);
-    fd.append("instructions", form.instructions);
-    fd.append("level", form.level);
-    fd.append("language", form.language);
     fd.append("thumbnailImage", thumb);
-    if (introVideo) {
-      fd.append("introVideo", introVideo);
-    }
     try {
-      const res = await fetch(`${API_BASE_URL}/course/createCourse`, {
+      const res = await fetch("http://localhost:4000/api/v1/course/createCourse", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
@@ -162,19 +104,8 @@ export default function InstructorDashboard() {
       const data = await res.json();
       if (data.success) {
         setCreateMsg({ type:"success", text:"Course created successfully!" });
-        setBuilderMsg({ type:"success", text:"Now add sections and lecture videos below." });
-        setForm({
-          name:"", price:"", desc:"", whatYouWillLearn:"", category:"",
-          tags:"", instructions:"", level:"Beginner", language:"English",
-        });
+        setForm({ name:"", price:"", desc:"", whatYouWillLearn:"", category:"" });
         if (thumbRef.current) thumbRef.current.value = "";
-        if (introVideoRef.current) introVideoRef.current.value = "";
-        const createdCourse = data.data;
-        if (createdCourse?._id) {
-          setLessonCourseId(createdCourse._id);
-          setRealCourses((prev) => [createdCourse, ...prev]);
-          await loadCourseSections(createdCourse._id);
-        }
         loadCourses(user);
       } else {
         setCreateMsg({ type:"error", text: data.message || "Failed to create course." });
@@ -183,131 +114,8 @@ export default function InstructorDashboard() {
     setCreating(false);
   }
 
-  async function addSection(e) {
-    e.preventDefault();
-    setBuilderMsg({ type:"", text:"" });
-
-    if (!lessonCourseId || !sectionName.trim()) {
-      setBuilderMsg({ type:"error", text:"Select a course and enter section name." });
-      return;
-    }
-
-    try {
-      setAddingSection(true);
-      const res = await fetch(`${API_BASE_URL}/course/createSection`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({ courseId: lessonCourseId, sectionName: sectionName.trim() }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setBuilderMsg({ type:"success", text:"Section added successfully." });
-        setSectionName("");
-        const createdSection = data.newSection;
-        if (createdSection?._id) {
-          setSections((prev) => [...prev, createdSection]);
-          setLectureForm((prev) => ({ ...prev, sectionId: createdSection._id }));
-        } else {
-          await loadCourseSections(lessonCourseId);
-        }
-      } else {
-        setBuilderMsg({ type:"error", text: data.message || "Failed to add section." });
-      }
-    } catch {
-      setBuilderMsg({ type:"error", text:"Server error while adding section." });
-    } finally {
-      setAddingSection(false);
-    }
-  }
-
-  async function addLecture(e) {
-    e.preventDefault();
-    setBuilderMsg({ type:"", text:"" });
-
-    const video = lectureVideoRef.current?.files[0];
-    if (!lessonCourseId || !lectureForm.sectionId || !lectureForm.title || !lectureForm.timeDuration || !lectureForm.description || !video) {
-      setBuilderMsg({ type:"error", text:"Fill all lecture fields and upload a video." });
-      return;
-    }
-
-    if (video.size > MAX_LECTURE_VIDEO_MB * 1024 * 1024) {
-      setBuilderMsg({ type:"error", text:`Lecture video is too large. Please upload a file under ${MAX_LECTURE_VIDEO_MB}MB.` });
-      return;
-    }
-
-    try {
-      setAddingLecture(true);
-      const fd = new FormData();
-      fd.append("sectionId", lectureForm.sectionId);
-      fd.append("title", lectureForm.title);
-      fd.append("timeDuration", lectureForm.timeDuration);
-      fd.append("description", lectureForm.description);
-      fd.append("videoFile", video);
-
-      const res = await fetch(`${API_BASE_URL}/course/createSubSection`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: fd,
-      });
-      const contentType = res.headers.get("content-type") || "";
-      const data = contentType.includes("application/json")
-        ? await res.json()
-        : { success: false, message: await res.text() };
-
-      if (res.ok && data.success) {
-        setBuilderMsg({ type:"success", text:"Lecture video added successfully." });
-        setLectureForm((prev) => ({ ...prev, title:"", timeDuration:"", description:"" }));
-        if (lectureVideoRef.current) lectureVideoRef.current.value = "";
-      } else {
-        const statusMessage = res.status === 413
-          ? `Lecture video is too large. Please upload a file under ${MAX_LECTURE_VIDEO_MB}MB.`
-          : "Failed to add lecture.";
-        setBuilderMsg({ type:"error", text: data.message || statusMessage });
-      }
-    } catch {
-      setBuilderMsg({ type:"error", text:"Server error while adding lecture." });
-    } finally {
-      setAddingLecture(false);
-    }
-  }
-
-  function submitSupport(e) {
-    e.preventDefault();
-    setSupportMsg({ type:"", text:"" });
-
-    if (!supportForm.message.trim()) {
-      setSupportMsg({ type:"error", text:"Please describe your issue before submitting." });
-      return;
-    }
-
-    const userEmail = user?.email || "";
-    const subject = encodeURIComponent(`[Instructor][${supportForm.priority}] ${supportForm.topic}`);
-    const body = encodeURIComponent(
-      `User: ${user?.firstName || ""} ${user?.lastName || ""}\nEmail: ${userEmail}\n\nIssue:\n${supportForm.message.trim()}`
-    );
-
-    window.location.href = `mailto:anuragyadav31660@gmail.com?subject=${subject}&body=${body}`;
-    setSupportMsg({ type:"success", text:"Support draft opened in your email app." });
-    setSupportForm((prev) => ({ ...prev, message: "" }));
-  }
-
-  function getDummy() {
-    return [
-      {_id:"d1",courseName:"Full Stack Web Development",courseDescription:"Complete MERN stack course",price:999,studentsEnrolled:[...Array(312)]},
-      {_id:"d2",courseName:"React & Node.js Masterclass",courseDescription:"Advanced React patterns",price:799,studentsEnrolled:[...Array(245)]},
-    ];
-  }
-
-  const totalStudents = courses.reduce((s,c) => s+(c.studentsEnrolled?.length||0),0);
-  const revenue = courses.reduce((s,c) => s+(c.price||0)*(c.studentsEnrolled?.length||0),0);
+  const totalStudents = courses.reduce((s,c) => s+(c.enrolledCount||c.studentsEnrolled?.length||0),0);
+  const revenue = courses.reduce((s,c) => s+(c.price||0)*(c.enrolledCount||c.studentsEnrolled?.length||0),0);
 
   return (
     <div className={dashStyles.layout}>
@@ -343,7 +151,7 @@ export default function InstructorDashboard() {
                   <div className={styles.overviewThumb} style={{background:GRADIENTS[i%GRADIENTS.length]}}>{EMOJI[i%EMOJI.length]}</div>
                   <div style={{flex:1}}>
                     <div className={styles.overviewName}>{c.courseName}</div>
-                    <div className={styles.overviewMeta}>{c.studentsEnrolled?.length||0} students</div>
+                    <div className={styles.overviewMeta}>{c.enrolledCount||c.studentsEnrolled?.length||0} students</div>
                   </div>
                   <div className={styles.overviewPrice}>₹{c.price?.toLocaleString("en-IN")||0}</div>
                 </div>
@@ -375,9 +183,9 @@ export default function InstructorDashboard() {
                     </div>
                   </div>
                   <div className={styles.tdPrice}>₹{c.price?.toLocaleString("en-IN")||0}</div>
-                  <div className={styles.tdEnrolled}>{c.studentsEnrolled?.length||0}</div>
-                  <div className={styles.tdVal}>⭐ 4.8</div>
-                  <div><button className={styles.btnEdit}>Edit</button></div>
+                  <div className={styles.tdEnrolled}>{c.enrolledCount||c.studentsEnrolled?.length||0}</div>
+                  <div className={styles.tdVal}>⭐ {Number(c.averageRating||0).toFixed(1)}</div>
+                  <div><button className={styles.btnEdit} onClick={() => navigate(`/edit-course/${c._id}`)}>Edit</button></div>
                 </div>
               ))}
             </div>
@@ -413,23 +221,6 @@ export default function InstructorDashboard() {
                     <label>Thumbnail *</label>
                     <input type="file" accept="image/*" ref={thumbRef} />
                   </div>
-                  <div className="form-group">
-                    <label>Intro Video</label>
-                    <input type="file" accept="video/*" ref={introVideoRef} />
-                  </div>
-                  <div className="form-group">
-                    <label>Level</label>
-                    <select value={form.level} onChange={e=>setForm({...form,level:e.target.value})}>
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Language</label>
-                    <input type="text" placeholder="e.g. English"
-                      value={form.language} onChange={e=>setForm({...form,language:e.target.value})} />
-                  </div>
                   <div className="form-group" style={{gridColumn:"1/-1"}}>
                     <label>Description *</label>
                     <textarea placeholder="Describe your course..." rows={4}
@@ -440,117 +231,11 @@ export default function InstructorDashboard() {
                     <textarea placeholder="List key outcomes, one per line..." rows={3}
                       value={form.whatYouWillLearn} onChange={e=>setForm({...form,whatYouWillLearn:e.target.value})} />
                   </div>
-                  <div className="form-group" style={{gridColumn:"1/-1"}}>
-                    <label>Tags</label>
-                    <input type="text" placeholder="e.g. react, node, fullstack"
-                      value={form.tags} onChange={e=>setForm({...form,tags:e.target.value})} />
-                  </div>
-                  <div className="form-group" style={{gridColumn:"1/-1"}}>
-                    <label>Requirements / Instructions</label>
-                    <textarea placeholder="One per line or comma separated" rows={3}
-                      value={form.instructions} onChange={e=>setForm({...form,instructions:e.target.value})} />
-                  </div>
                 </div>
                 <button type="submit" className={styles.btnCreate} disabled={creating}>
                   {creating ? "Creating..." : "Create Course"}
                 </button>
               </form>
-
-              <div className={styles.builderPanel}>
-                <h3>Course Builder: Sections & Lectures</h3>
-                <p className={styles.builderHint}>After creating a course, add sections and upload lesson videos here.</p>
-
-                {builderMsg.text && <div className={`alert alert-${builderMsg.type}`}>{builderMsg.text}</div>}
-
-                <div className="form-group">
-                  <label>Select Course</label>
-                  <select
-                    value={lessonCourseId}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setLessonCourseId(value);
-                      loadCourseSections(value);
-                    }}
-                  >
-                    <option value="">Select your course</option>
-                    {realCourses.map((c) => (
-                      <option key={c._id} value={c._id}>{c.courseName}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <form onSubmit={addSection} className={styles.inlineForm}>
-                  <div className="form-group" style={{flex:1}}>
-                    <label>New Section Name</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Introduction"
-                      value={sectionName}
-                      onChange={(e)=>setSectionName(e.target.value)}
-                    />
-                  </div>
-                  <button type="submit" className={styles.btnSecondary} disabled={addingSection}>
-                    {addingSection ? "Adding..." : "Add Section"}
-                  </button>
-                </form>
-
-                {sections.length > 0 && (
-                  <div className={styles.sectionList}>
-                    {sections.map((s) => (
-                      <span key={s._id} className={styles.sectionChip}>{s.sectionName}</span>
-                    ))}
-                  </div>
-                )}
-
-                <form onSubmit={addLecture} className={styles.lectureForm}>
-                  <div className="form-group">
-                    <label>Section</label>
-                    <select
-                      value={lectureForm.sectionId}
-                      onChange={(e)=>setLectureForm({...lectureForm,sectionId:e.target.value})}
-                    >
-                      <option value="">Select section</option>
-                      {sections.map((s) => (
-                        <option key={s._id} value={s._id}>{s.sectionName}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Lecture Title</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. What is React?"
-                      value={lectureForm.title}
-                      onChange={(e)=>setLectureForm({...lectureForm,title:e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Time Duration (HH:MM:SS)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 00:12:30"
-                      value={lectureForm.timeDuration}
-                      onChange={(e)=>setLectureForm({...lectureForm,timeDuration:e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group" style={{gridColumn:"1/-1"}}>
-                    <label>Lecture Description</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Explain this lecture..."
-                      value={lectureForm.description}
-                      onChange={(e)=>setLectureForm({...lectureForm,description:e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group" style={{gridColumn:"1/-1"}}>
-                    <label>Lecture Video</label>
-                    <input type="file" accept="video/*" ref={lectureVideoRef} />
-                  </div>
-                  <button type="submit" className={styles.btnCreate} disabled={addingLecture}>
-                    {addingLecture ? "Uploading..." : "Add Lecture Video"}
-                  </button>
-                </form>
-              </div>
             </div>
           </div>
         )}
@@ -573,48 +258,6 @@ export default function InstructorDashboard() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "support" && (
-          <div>
-            <div className={dashStyles.dashHeader}><h1>Support</h1><p>Get help with course publishing, uploads, payouts, and learner issues.</p></div>
-            <div className={styles.createPanel}>
-              {supportMsg.text && <div className={`alert alert-${supportMsg.type}`}>{supportMsg.text}</div>}
-              <form onSubmit={submitSupport} className={styles.formGrid}>
-                <div className="form-group">
-                  <label>Topic</label>
-                  <select value={supportForm.topic} onChange={(e)=>setSupportForm({...supportForm,topic:e.target.value})}>
-                    <option>Course Builder</option>
-                    <option>Lecture Upload</option>
-                    <option>Pricing & Revenue</option>
-                    <option>Student Enrollment</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Priority</label>
-                  <select value={supportForm.priority} onChange={(e)=>setSupportForm({...supportForm,priority:e.target.value})}>
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
-                  </select>
-                </div>
-                <div className="form-group" style={{gridColumn:"1/-1"}}>
-                  <label>Issue Details</label>
-                  <textarea
-                    rows={5}
-                    placeholder="Describe exactly what is failing and where..."
-                    value={supportForm.message}
-                    onChange={(e)=>setSupportForm({...supportForm,message:e.target.value})}
-                  />
-                </div>
-                <div style={{ gridColumn:"1/-1", display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}>
-                  <button type="submit" className={styles.btnCreate}>Submit Ticket</button>
-                  <a href="mailto:anuragyadav31660@gmail.com" style={{ color:"var(--accent2)", textDecoration:"none" }}>Email anuragyadav31660@gmail.com</a>
-                </div>
-              </form>
             </div>
           </div>
         )}

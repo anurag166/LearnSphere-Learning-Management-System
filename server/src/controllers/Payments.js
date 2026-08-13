@@ -5,7 +5,7 @@ import { User } from "../models/user.model.js";
 import mongoose from "mongoose";
 import crypto from "crypto";
 import { ApiError } from "../utils/ApiErrors.js";
-import {mailSender} from "../utils/mailSender.js"
+import { mailSender } from "../utils/mailSender.js";
 
 
 
@@ -138,11 +138,28 @@ export const verifyPayment = async (req, res) => {
             });
         }
 
-        await User.findByIdAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
             req.user.id,
             { $addToSet: { courses: courseId } },
             { new: true }
         );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        try {
+            await mailSender(
+                updatedUser.email,
+                `Your course purchase is confirmed: ${enrolledCourse.courseName}`,
+                `Congratulations! Your payment for <strong>${enrolledCourse.courseName}</strong> was successful. You can now access the course from your dashboard.`
+            );
+        } catch (emailError) {
+            console.error("Course confirmation email failed:", emailError);
+        }
 
         return res.status(200).json({
             success: true,
@@ -160,57 +177,72 @@ export const verifyPayment = async (req, res) => {
 
 //verify signature
 export const verifySignature = async(req , res)=>{
-    const webhookSecret = "12345678";
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "12345678";
     const signature = req.headers["x-razorpay-signature"];
-    const shasum=crypto.createHmac("sha256",webhookSecret);
-    shasum.update(JSON.stringify(req.body));
+    const shasum = crypto.createHmac("sha256", webhookSecret);
+    shasum.update(req.body);
     const digest = shasum.digest("hex");
     
-    if(digest===signature){
+    if (digest === signature) {
         console.log("payment is authorised");
 
-        const {courseId, userId} = req.body.payload.payment.entity.notes;
+        const { courseId, userId } = req.body.payload.payment.entity.notes;
 
         try {
-            //fulfill the action
-            //find the course and eroll student in it
             const enrolledCourse = await course.findOneAndUpdate(
-                {_id: courseId},
-                {$push:{studentEnrolled: userId}},
-                {new: true},
-
+                { _id: courseId },
+                { $addToSet: { studentEnrolled: userId } },
+                { new: true }
             );
-            if(!enrolledCourse){
-                throw new ApiError(500,'course not found');
+            if (!enrolledCourse) {
+                throw new ApiError(500, 'Course not found');
             }
-            console.log(enrolledCourse);
-            //find the student and add the course in list of enrolled courses
-            const enrolledStudent = await User.findOneAndUpdate(
-                {_id: userId},
-                {$push:{ courses:courseId}},
-                {new: true},
-            );
-            console.log(enrolledStudent);
-            //mail send for confirmation
-            const emailResponse = await mailSender(
-                enrolledStudent.email,
-                "COngratulation !!!",
-                "Congratulation , you are enrolled into new course",
 
+            const enrolledStudent = await User.findOneAndUpdate(
+                { _id: userId },
+                { $addToSet: { courses: courseId } },
+                { new: true }
             );
-            console.log(emailResponse);
-            return res.status({
+            if (!enrolledStudent) {
+                throw new ApiError(500, 'User not found');
+            }
+
+            try {
+                await mailSender(
+                    enrolledStudent.email,
+`🎉 Course Enrollment Confirmed: ${enrolledCourse.courseName}`,
+`
+<h2>Congratulations, ${enrolledStudent.name || "Student"}! 🎉</h2>
+
+<p>Your payment has been received successfully, and your enrollment is now confirmed.</p>
+
+<p><strong>Course:</strong> ${enrolledCourse.courseName}</p>
+
+<p>You can now start learning by accessing the course from your dashboard.</p>
+
+<p>We wish you a wonderful learning journey and hope you gain valuable skills from this course.</p>
+
+<p>If you have any questions or need assistance, feel free to reach out to our support team.</p>
+
+<br>
+
+<p>Happy Learning! 🚀</p>
+<p><strong>Team ${process.env.APP_NAME || "CourseHub"}</strong></p>
+`
+                );
+            } catch (emailError) {
+                console.error("Webhook email failed:", emailError);
+            }
+
+            return res.status(200).json({
                 success: true,
                 message: "Signature verified and course added",
-
-            })
+            });
         } catch (error) {
-            throw new ApiError(500,error.message)
+            throw new ApiError(500, error.message);
         }
-    }
-
-    else{
-        throw new ApiError(400,'Invalid request')
+    } else {
+        throw new ApiError(400, 'Invalid request');
     }
 
 }

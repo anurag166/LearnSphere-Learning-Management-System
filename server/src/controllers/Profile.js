@@ -103,11 +103,23 @@ export const deleteAccount = async(req , res)=>{
 
 export const getAllUserDetails = async(req , res)=>{
     try {
-        const id = req.user.id;
+        const id = req.user?._id;
+        console.log("getAllUserDetails - req.user:", req.user);
+        console.log("getAllUserDetails - extracted id:", id);
+        
+        if (!id) {
+            return res.status(401).json({
+                success: false,
+                message: 'user not authenticated'
+            });
+        }
+
         const userDetails = await User.findById(id)
             .populate("additionalDetails")
             .populate("courses");
 
+        console.log("getAllUserDetails - userDetails found:", !!userDetails);
+        
         if (!userDetails) {
             return res.status(404).json({
                 success: false,
@@ -115,20 +127,25 @@ export const getAllUserDetails = async(req , res)=>{
             });
         }
 
-        const normalizedCourses = Array.isArray(userDetails.courses)
-            ? userDetails.courses
-            : (userDetails.courses ? [userDetails.courses] : []);
+        // Convert to plain object and remove password
+        const userObject = userDetails.toObject();
+        delete userObject.password;
+        delete userObject.confirmPassword;
+        
+        // Ensure courses is always an array
+        if (!Array.isArray(userObject.courses)) {
+            userObject.courses = userObject.courses ? [userObject.courses] : [];
+        }
 
-        const userPayload = userDetails.toObject();
-        userPayload.courses = normalizedCourses;
+        console.log("getAllUserDetails - final payload:", userObject);
 
         return res.status(200).json({
             success: true,
             message: 'user details fetched successfully',
-            data: userPayload,
-
-        })
+            data: userObject,
+        });
     } catch (error) {
+        console.error("getAllUserDetails - Error:", error.message);
         return res.status(500).json({
             success: false,
             message: error.message || 'failed to fetch user details'

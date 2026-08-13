@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import { API_BASE_URL } from "../services/apis";
+import { getStoredUser } from "../utils/getStoredUser";
 import styles from "./CourseDetails.module.css";
 
 export default function CourseDetails() {
@@ -14,8 +15,12 @@ export default function CourseDetails() {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const [enrollMsg, setEnrollMsg] = useState({ type:"", text:"" });
+  const [reviewMsg, setReviewMsg] = useState({ type:"", text:"" });
   const token = localStorage.getItem("token");
+  const storedUser = getStoredUser();
 
   function loadRazorpayScript() {
     return new Promise((resolve) => {
@@ -62,12 +67,22 @@ export default function CourseDetails() {
       const res = await fetch(`${API_BASE_URL}/course/getAllRatingAndReviews/${id}`);
       const data = await res.json();
       const reviewList = Array.isArray(data.data) ? data.data : [];
-      if (data.success && reviewList.length) { setReviews(reviewList); return; }
-    } catch {}
-    setReviews([
-      { _id:"r1", user:{firstName:"Rahul"}, rating:5, review:"Excellent course! Very practical and well-structured." },
-      { _id:"r2", user:{firstName:"Priya"}, rating:5, review:"Best course I've taken. Highly recommended!" },
-    ]);
+      setReviews(reviewList);
+      if (reviewList.length) {
+        const average = reviewList.reduce((sum, item) => sum + Number(item.rating || 0), 0) / reviewList.length;
+        setAverageRating(Number(average.toFixed(1)));
+        setReviewCount(reviewList.length);
+      } else {
+        setAverageRating(0);
+        setReviewCount(0);
+      }
+      return;
+    } catch (error) {
+      console.log('loadReviews error:', error);
+    }
+    setReviews([]);
+    setAverageRating(0);
+    setReviewCount(0);
   }
 
   async function handleEnroll() {
@@ -125,7 +140,7 @@ export default function CourseDetails() {
 
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-              setEnrollMsg({ type:"success", text:"Payment successful! Course enrolled." });
+              setEnrollMsg({ type:"success", text:"Payment successful! Course enrolled. A confirmation email has been sent to you." });
             } else {
               setEnrollMsg({ type:"error", text: verifyData.message || "Payment verification failed." });
             }
@@ -134,8 +149,8 @@ export default function CourseDetails() {
           }
         },
         prefill: {
-          name: localStorage.getItem("userName") || "Student",
-          email: localStorage.getItem("userEmail") || "",
+          name: storedUser?.firstName ? `${storedUser.firstName} ${storedUser.lastName || ""}`.trim() : "Student",
+          email: storedUser?.email || "",
         },
         theme: {
           color: "#0f766e",
@@ -153,16 +168,31 @@ export default function CourseDetails() {
   async function submitReview(e) {
     e.preventDefault();
     if (!token) { navigate("/login"); return; }
+    if (!rating || !review.trim()) {
+      setReviewMsg({ type: 'error', text: 'Please provide both rating and review.' });
+      return;
+    }
+
     try {
-      await fetch(`${API_BASE_URL}/course/createRatingAndReview`, {
+      const res = await fetch(`${API_BASE_URL}/course/createRatingAndReview`, {
         method: "POST",
         headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
         body: JSON.stringify({ courseId: id, rating, review }),
       });
+      const data = await res.json();
+      if (!data.success) {
+        setReviewMsg({ type: 'error', text: data.message || 'Could not submit review.' });
+        return;
+      }
+      setReviewMsg({ type: 'success', text: 'Review submitted successfully.' });
       loadReviews();
-      setRating(0); setReview("");
-    } catch {}
+      setRating(0);
+      setReview("");
+    } catch (error) {
+      console.log('submitReview error:', error);
+      setReviewMsg({ type: 'error', text: 'Server error. Please try again.' });
+    }
   }
 
   if (loading) return <><Navbar /><div style={{textAlign:"center",padding:"100px",color:"var(--muted)"}}><div className="spinner" /></div></>;
@@ -195,9 +225,9 @@ export default function CourseDetails() {
             <h1 className={styles.courseTitle}>{course.courseName}</h1>
             <p className={styles.courseDesc}>{course.courseDescription}</p>
             <div className={styles.metaRow}>
-              <div className={styles.metaItem}><span className={styles.ratingStars}>★★★★★</span> <strong>4.9</strong> rating</div>
+              <div className={styles.metaItem}><span className={styles.ratingStars}>★★★★★</span> <strong>{averageRating || 4.9}</strong> rating</div>
+              <div className={styles.metaItem}>{reviewCount ? `(${reviewCount} reviews)` : "No reviews yet"}</div>
               <div className={styles.metaItem}>👥 <strong>{enrolled}</strong> students</div>
-              <div className={styles.metaItem}>🎬 <strong>34</strong> lessons</div>
             </div>
             <div className={styles.instructorChip}>
               <div className={styles.icAvatar}>{initials}</div>
@@ -259,6 +289,7 @@ export default function CourseDetails() {
                       onClick={() => setRating(n)}>★</button>
                   ))}
                 </div>
+                {reviewMsg.text && <div className={`alert alert-${reviewMsg.type}`} style={{ marginBottom: 12 }}>{reviewMsg.text}</div>}
                 <form onSubmit={submitReview}>
                   <textarea placeholder="Share your experience..." value={review}
                     onChange={e => setReview(e.target.value)} rows={3}
