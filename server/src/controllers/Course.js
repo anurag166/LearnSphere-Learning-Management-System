@@ -70,6 +70,12 @@ export const createCourse = async (req , res)=>{
                 message: "All fields are required (courseName, courseDescription, whatWillYouLearn, price, category1, thumbnailImage)"
             });
         }
+        if (Number(price) < 0) {
+            return res.status(400).json({
+            success: false,
+            message: "Course price cannot be negative"
+            });
+        }
         
         //check for instructor
         const userId = req.user.id;
