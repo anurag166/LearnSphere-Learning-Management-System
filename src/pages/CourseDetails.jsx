@@ -107,6 +107,13 @@ export default function CourseDetails() {
         return;
       }
 
+      // Free courses are enrolled directly on the backend without a
+      // Razorpay order — no payment popup needed.
+      if (data.freeEnrollment) {
+        setEnrollMsg({ type: "success", text: data.message || "Enrolled successfully! You can start learning now." });
+        return;
+      }
+
       const options = {
         key: data.key,
         amount: Number(data.amount),
@@ -203,14 +210,9 @@ export default function CourseDetails() {
     : "Expert Instructor";
   const initials = instructor.split(" ").map(w=>w[0]||"").join("").toUpperCase().slice(0,2);
   const enrolled = course.studentsEnrolled?.length || 0;
-  const learns = (course.whatYouWillLearn || "").split(",").map(s=>s.trim()).filter(Boolean);
-  const curriculum = [
-    { title:"Introduction & Setup", lessons:4 },
-    { title:"Core Concepts", lessons:8 },
-    { title:"Building Projects", lessons:12 },
-    { title:"Advanced Topics", lessons:6 },
-    { title:"Deployment & Beyond", lessons:4 },
-  ];
+  const learns = (course.whatWillYouLearn || course.whatYouWillLearn || "").split(",").map(s=>s.trim()).filter(Boolean);
+  const curriculum = Array.isArray(course.courseContent) ? course.courseContent : [];
+  const totalLectures = curriculum.reduce((acc, s) => acc + (Array.isArray(s.subSection) ? s.subSection.length : 0), 0);
 
   return (
     <>
@@ -225,25 +227,43 @@ export default function CourseDetails() {
             <h1 className={styles.courseTitle}>{course.courseName}</h1>
             <p className={styles.courseDesc}>{course.courseDescription}</p>
             <div className={styles.metaRow}>
-              <div className={styles.metaItem}><span className={styles.ratingStars}>★★★★★</span> <strong>{averageRating || 4.9}</strong> rating</div>
+              <div className={styles.metaItem}><span className={styles.ratingStars}>★★★★★</span> <strong>{averageRating > 0 ? averageRating : "New"}</strong> rating</div>
               <div className={styles.metaItem}>{reviewCount ? `(${reviewCount} reviews)` : "No reviews yet"}</div>
               <div className={styles.metaItem}>👥 <strong>{enrolled}</strong> students</div>
             </div>
             <div className={styles.instructorChip}>
-              <div className={styles.icAvatar}>{initials}</div>
+              <div className={styles.icAvatar}>
+                {course.instructor?.profileImage ? (
+                  <img src={course.instructor.profileImage} alt="Instructor" style={{width:"100%", height:"100%", borderRadius:"50%", objectFit:"cover"}} />
+                ) : initials}
+              </div>
               <div className={styles.icName}>By {instructor}</div>
             </div>
           </div>
 
           <div className={styles.purchaseCard}>
-            <div className={styles.courseThumbBig}>⚡</div>
+            {course.thumbnail ? (
+              <div className={styles.courseThumbBig} style={{ backgroundImage: `url(${course.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+            ) : (
+              <div className={styles.courseThumbBig}>⚡</div>
+            )}
             <div className={styles.priceDisplay}>
               <div className={styles.priceMain}>₹{course.price?.toLocaleString("en-IN") || "999"}</div>
               <div className={styles.priceOrig}>₹{Math.floor((course.price||999)*1.4).toLocaleString("en-IN")}</div>
               <div className={styles.discountBadge}>28% off</div>
             </div>
             {enrollMsg.text && <div className={`alert alert-${enrollMsg.type}`}>{enrollMsg.text}</div>}
-            <button className={styles.btnEnrollBig} onClick={handleEnroll}>Enroll Now</button>
+            
+            {course.studentsEnrolled?.includes(storedUser?._id) ? (
+              <button className={styles.btnEnrollBig} onClick={() => navigate(`/view-course/${id}`)}>
+                Continue Learning
+              </button>
+            ) : (
+              <button className={styles.btnEnrollBig} onClick={handleEnroll}>
+                Enroll Now
+              </button>
+            )}
+
             <ul className={styles.courseIncludes}>
               <li>Full lifetime access</li>
               <li>Access on mobile & desktop</li>
@@ -268,14 +288,41 @@ export default function CourseDetails() {
 
           <div className={styles.curriculumSection}>
             <h2>Course Curriculum</h2>
-            {curriculum.map((s,i) => (
-              <div key={i} className={styles.sectionItem}>
+            {curriculum.length === 0 ? (
+              <div className={styles.sectionItem}>
                 <div className={styles.sectionHeader}>
-                  <div className={styles.sectionTitle}>📁 {s.title}</div>
-                  <div className={styles.sectionMeta}>{s.lessons} lessons</div>
+                  <div className={styles.sectionTitle}>📁 No curriculum added yet</div>
                 </div>
               </div>
-            ))}
+            ) : (
+              <>
+                <p style={{ color:"var(--muted)", fontSize:13, marginBottom:14 }}>
+                  {curriculum.length} section{curriculum.length !== 1 ? "s" : ""} · {totalLectures} lecture{totalLectures !== 1 ? "s" : ""}
+                </p>
+                {curriculum.map((section, si) => {
+                  const lectures = Array.isArray(section.subSection) ? section.subSection : [];
+                  return (
+                    <div key={section._id || si} className={styles.sectionItem}>
+                      <div className={styles.sectionHeader}>
+                        <div className={styles.sectionTitle}>📁 {section.sectionName || `Section ${si + 1}`}</div>
+                        <div className={styles.sectionMeta}>{lectures.length} lecture{lectures.length !== 1 ? "s" : ""}</div>
+                      </div>
+                      {lectures.length > 0 && (
+                        <ul style={{ margin:"8px 0 0 20px", padding:0, listStyle:"none", display:"flex", flexDirection:"column", gap:6 }}>
+                          {lectures.map((lec, li) => (
+                            <li key={lec._id || li} style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--muted)" }}>
+                              <span style={{ fontSize:12 }}>🎬</span>
+                              <span style={{ flex:1 }}>{lec.title || `Lecture ${li + 1}`}</span>
+                              {lec.timeDuration && <span style={{ fontSize:12, opacity:.7 }}>{lec.timeDuration}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </div>
 
           <div className={styles.reviewsSection}>
@@ -303,7 +350,11 @@ export default function CourseDetails() {
                 <div key={r._id||i} className={styles.reviewItem}>
                   <div className={styles.riHeader}>
                     <div className={styles.riUser}>
-                      <div className={styles.riAvatar}>{(r.user?.firstName||"S")[0]}</div>
+                      <div className={styles.riAvatar}>
+                        {r.user?.profileImage ? (
+                          <img src={r.user.profileImage} alt="Reviewer" style={{width:"100%", height:"100%", borderRadius:"50%", objectFit:"cover"}} />
+                        ) : (r.user?.firstName||"S")[0]}
+                      </div>
                       <div className={styles.riName}>{r.user?.firstName || "Student"}</div>
                     </div>
                     <div className={styles.riStars}>{"★".repeat(r.rating||5)}</div>

@@ -28,7 +28,13 @@ export default function Navbar() {
         {token && user ? (
           <>
             <Link
-              to={user.accountType === "Instructor" ? "/instructor-dashboard" : "/dashboard"}
+              to={
+                user.accountType === "Instructor"
+                  ? "/instructor-dashboard"
+                  : user.accountType === "Admin"
+                  ? "/admin-dashboard"
+                  : "/dashboard"
+              }
               className="btn-ghost"
             >
               Dashboard

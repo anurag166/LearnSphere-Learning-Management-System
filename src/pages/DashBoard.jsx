@@ -134,17 +134,20 @@ export default function DashBoard() {
       <div className={styles.enrolledGrid}>
         {list.map((c, i) => {
           const name = c.courseName || `Course ${i+1}`;
-          const prog = Math.floor(Math.random()*70+10);
+          const instructorName = c.instructor ? `${c.instructor.firstName} ${c.instructor.lastName}` : "Enrolled Course";
+          
           return (
             <div key={c._id || i} className={styles.enrolledCard}>
-              <div className={styles.ecThumb} style={{background: GRADIENTS[i % GRADIENTS.length]}}>
-                {EMOJI[i % EMOJI.length]}
-              </div>
+              {c.thumbnail ? (
+                <div className={styles.ecThumb} style={{ backgroundImage: `url(${c.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+              ) : (
+                <div className={styles.ecThumb} style={{background: GRADIENTS[i % GRADIENTS.length]}}>
+                  {EMOJI[i % EMOJI.length]}
+                </div>
+              )}
               <div className={styles.ecBody}>
                 <div className={styles.ecTitle}>{name}</div>
-                <div className={styles.ecInstructor}>Enrolled Course</div>
-                <div className={styles.progressWrap}><div className={styles.progressBar} style={{width:`${prog}%`}} /></div>
-                <div className={styles.progressText}><span>{prog}% complete</span><span>{Math.floor(prog/10)} / 10 lessons</span></div>
+                <div className={styles.ecInstructor}>{instructorName}</div>
                 <button
                   className={styles.btnContinue}
                   onClick={() => navigate(`/view-course/${c._id}`)}

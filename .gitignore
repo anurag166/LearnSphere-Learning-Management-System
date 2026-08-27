@@ -5,3 +5,5 @@ server/.env
 .env
 backend.zip
 *.zip
+.DS_Store
+*/.DS_Store

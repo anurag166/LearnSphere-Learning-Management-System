@@ -10,6 +10,8 @@ import courseRoutes from "./src/routes/Course.js";
 import userRoutes from "./src/routes/User.js";
 import paymentRoutes from "./src/routes/Payments.js";
 import profileRoutes from "./src/routes/Profile.js";
+import chatbotRoutes from "./src/routes/Chatbot.js";
+import adminRoutes from "./src/routes/Admin.js";
 import connectDB from "./config/database.js";
 import { cloudinaryConnect } from "./config/cloudinary.js";
 
@@ -111,6 +113,8 @@ app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/chatbot", chatbotRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 // test route
 app.get("/", (req, res) => {

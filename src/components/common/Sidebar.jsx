@@ -70,7 +70,11 @@ export default function Sidebar({ activeTab, onTabChange, isInstructor }) {
       </nav>
       <div className={styles.bottom}>
         <div className={styles.userInfo}>
-          <div className={styles.avatar}>{initials}</div>
+          <div className={styles.avatar}>
+            {user?.profileImage ? (
+              <img src={user.profileImage} alt="Profile" style={{width:"100%", height:"100%", borderRadius:"50%", objectFit:"cover"}} />
+            ) : initials}
+          </div>
           <div>
             <div className={styles.userName}>{user ? `${user.firstName} ${user.lastName}` : "User"}</div>
             <div className={styles.userRole}>{isInstructor ? "Instructor" : "Student"}</div>

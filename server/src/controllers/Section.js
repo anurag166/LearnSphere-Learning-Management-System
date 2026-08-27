@@ -64,12 +64,25 @@ export const updateSection = async(req , res)=>{
 export const deleteSection = async(req , res)=>{
     try {
         const {sectionId} = req.params;
+        const courseId = req.body?.courseId || req.query?.courseId;
+
         await Section.findByIdAndDelete(sectionId);
+
+        // Remove the section reference from the parent course
+        if (courseId) {
+            await course.findByIdAndUpdate(courseId, {
+                $pull: { courseContent: sectionId }
+            });
+        }
+
         return res.status(200).json({
             success: true,
-            message: 'section deleted successfully '
+            message: 'section deleted successfully'
         })
     } catch (error) {
-        throw new ApiError(500,'some error occured while deleting the section')
+        return res.status(500).json({
+            success: false,
+            message: 'some error occurred while deleting the section'
+        });
     }
 }

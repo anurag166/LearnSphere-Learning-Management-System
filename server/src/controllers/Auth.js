@@ -102,19 +102,24 @@ export const signUp = async (req ,res )=>{
             about: null,
             contactNumber: "0000000000"
         })
+        const resolvedAccountType = accountType || "Student";
+
         const user= await User.create({
             firstName,
             lastName,
             email,
             password: hashPassword,
-            accountType: accountType || "Student",
+            accountType: resolvedAccountType,
+            instructorStatus: resolvedAccountType === "Instructor" ? "pending" : "none",
             additionalDetails: profileDetails._id,
             profileImage: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
         })
         console.log(user)
         return res.status(200).json({
             success:true,
-            message: 'user registered successfully',
+            message: resolvedAccountType === "Instructor"
+                ? "Account created. Your instructor account is pending admin approval."
+                : "user registered successfully",
             user
         })
     } catch (error) {
