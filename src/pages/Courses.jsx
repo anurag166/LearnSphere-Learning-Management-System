@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import { API_BASE_URL } from "../services/apis";
@@ -30,10 +30,11 @@ function getDummy() {
 }
 
 export default function Courses() {
+  const [searchParams] = useSearchParams();
   const [allCourses, setAllCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
-  const [activeCat, setActiveCat] = useState("all");
+  const [activeCat, setActiveCat] = useState(searchParams.get("category") || "all");
   const [sort, setSort] = useState("default");
   const [loading, setLoading] = useState(true);
 
@@ -55,7 +56,7 @@ export default function Courses() {
     try {
       const res = await fetch(`${API_BASE_URL}/course/showAllCategory`);
       const data = await res.json();
-      const categoryList = Array.isArray(data.data) ? data.data : [];
+      const categoryList = data.allCategory || data.data || [];
       if (data.success && categoryList.length) setCategories(categoryList);
     } catch {}
   }
@@ -65,7 +66,7 @@ export default function Courses() {
       const q = search.toLowerCase();
       const matchSearch = !q || c.courseName?.toLowerCase().includes(q) ||
         `${c.instructor?.firstName} ${c.instructor?.lastName}`.toLowerCase().includes(q);
-      const matchCat = activeCat === "all" || c.category === activeCat;
+      const matchCat = activeCat === "all" || c.category?._id === activeCat || c.category === activeCat;
       return matchSearch && matchCat;
     });
     if (sort === "price-asc") list.sort((a,b) => (a.price||0)-(b.price||0));
@@ -131,22 +132,42 @@ export default function Courses() {
               const initials = instructor.split(" ").map(w=>w[0]||"").join("").toUpperCase().slice(0,2);
               const enrolled = c.studentsEnrolled?.length || 0;
               const price = c.price ? `₹${Number(c.price).toLocaleString("en-IN")}` : "Free";
+              
+              let totalLectures = 0;
+              if (Array.isArray(c.courseContent)) {
+                 c.courseContent.forEach(sec => {
+                    if (Array.isArray(sec.subSection)) totalLectures += sec.subSection.length;
+                 });
+              }
+              const reviews = Array.isArray(c.ratingsAndReviews) ? c.ratingsAndReviews : [];
+              const averageRating = reviews.length
+                 ? (reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviews.length).toFixed(1)
+                 : 0;
+
               return (
                 <Link to={`/courses/${c._id}`} key={c._id} className={styles.courseCard}>
-                  <div className={styles.courseThumb} style={{background: GRADIENTS[i % GRADIENTS.length]}}>
-                    {EMOJI[i % EMOJI.length]}
-                  </div>
+                  {c.thumbnail ? (
+                    <div className={styles.courseThumb} style={{ backgroundImage: `url(${c.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+                  ) : (
+                    <div className={styles.courseThumb} style={{background: GRADIENTS[i % GRADIENTS.length]}}>
+                      {EMOJI[i % EMOJI.length]}
+                    </div>
+                  )}
                   <div className={styles.courseBody}>
-                    <div className={styles.courseCatBadge}>Course</div>
+                    <div className={styles.courseCatBadge}>{c.category?.name || "Course"}</div>
                     <div className={styles.courseTitle}>{c.courseName || "Untitled Course"}</div>
                     <div className={styles.courseInstructor}>
-                      <div className={styles.instructorAvatar}>{initials}</div>
+                      <div className={styles.instructorAvatar}>
+                        {c.instructor?.profileImage ? (
+                          <img src={c.instructor.profileImage} alt="Instructor" style={{width:"100%", height:"100%", borderRadius:"50%", objectFit:"cover"}} />
+                        ) : initials}
+                      </div>
                       {instructor}
                     </div>
                     <div className={styles.courseStats}>
                       <div className={styles.cs}>👥 {enrolled} students</div>
-                      <div className={styles.cs}>⭐ 4.8</div>
-                      <div className={styles.cs}>🎬 24 lessons</div>
+                      <div className={styles.cs}>⭐ {averageRating > 0 ? averageRating : "New"}</div>
+                      <div className={styles.cs}>🎬 {totalLectures} lesson{totalLectures !== 1 ? "s" : ""}</div>
                     </div>
                     <div className={styles.courseFooter}>
                       <div className={styles.coursePrice}>{price}</div>

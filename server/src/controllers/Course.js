@@ -177,7 +177,18 @@ export const showAllCourses = async (req , res)=>{
             instructor: true,
             ratingsAndReviews: true,
             studentsEnrolled: true,
+            courseContent: true,
+            category: true,
         }).populate("instructor")
+        .populate("category")
+        .populate("ratingsAndReviews")
+        .populate({
+            path: "courseContent",
+            populate: {
+                path: "subSection",
+                model: "subSection"
+            }
+        })
         .exec();
         return res.status(200).json({
             success: true,
@@ -291,7 +302,7 @@ export const updateCourse = async (req, res) => {
             whatYouWillLearn,
             price,
             category1,
-            category,
+            category: categoryId,
             tags,
             tag,
             instructions,
@@ -300,7 +311,7 @@ export const updateCourse = async (req, res) => {
         } = req.body || {};
 
         const learnContent = whatWillYouLearn || whatYouWillLearn;
-        const nextCategory = category1 || category;
+        const nextCategory = category1 || categoryId;
 
         if (nextCategory) {
             const categoryDetails = await category.findById(nextCategory);
@@ -367,6 +378,8 @@ export const getCourseDetails   = async( req ,res)=>{
                 studentsEnrolled: true,
                 studentEnrolled: true,
             })
+            .populate("instructor", "firstName lastName email profileImage")
+            .populate("category", "name")
             .populate({
                 path: "courseContent",
                 populate: {
@@ -388,10 +401,21 @@ export const getCourseDetails   = async( req ,res)=>{
                 message: 'Course not found'
             });
         }
+
+        // Merge both enrolled arrays so the count is always accurate
+        const courseObj = courseDetails.toObject();
+        const allEnrolled = [
+            ...(Array.isArray(courseObj.studentsEnrolled) ? courseObj.studentsEnrolled : []),
+            ...(Array.isArray(courseObj.studentEnrolled)  ? courseObj.studentEnrolled  : []),
+        ];
+        const uniqueEnrolled = [...new Set(allEnrolled.map(id => String(id)))];
+        courseObj.studentsEnrolled = uniqueEnrolled;
+        courseObj.enrolledCount    = uniqueEnrolled.length;
+
         return res.status(200).json({
             success: true,
-            message: 'Data for  course fetched successfully',
-            data: courseDetails
+            message: 'Data for course fetched successfully',
+            data: courseObj
         })
     } catch (error) {
         console.log(error);
@@ -401,3 +425,108 @@ export const getCourseDetails   = async( req ,res)=>{
         });
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Public homepage stats — real counts, no hardcoded numbers.
+// ─────────────────────────────────────────────────────────────────────────
+export const getPlatformStats = async (req, res) => {
+    try {
+        const [totalCourses, totalStudents, allCourses] = await Promise.all([
+            course.countDocuments({}),
+            User.countDocuments({ accountType: "Student" }),
+            course.find({}).select("ratingsAndReviews studentsEnrolled studentEnrolled").populate({
+                path: "ratingsAndReviews",
+                select: "rating",
+            }),
+        ]);
+
+        let ratingSum = 0;
+        let ratingCount = 0;
+        let enrolledSum = 0;
+        for (const c of allCourses) {
+            for (const r of c.ratingsAndReviews || []) {
+                if (typeof r.rating === "number") {
+                    ratingSum += r.rating;
+                    ratingCount += 1;
+                }
+            }
+            enrolledSum += (c.studentsEnrolled?.length || 0) + (c.studentEnrolled?.length || 0);
+        }
+        const avgRating = ratingCount ? ratingSum / ratingCount : 0;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalCourses,
+                totalStudents,
+                totalEnrollments: enrolledSum,
+                avgRating: Number(avgRating.toFixed(1)),
+                ratingCount,
+            },
+        });
+    } catch (error) {
+        console.log("getPlatformStats error:", error.message);
+        return res.status(500).json({ success: false, message: "Error fetching platform stats" });
+    }
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Public "top instructors" — real instructors ranked by course count / rating.
+// ─────────────────────────────────────────────────────────────────────────
+export const getTopInstructors = async (req, res) => {
+    try {
+        const instructors = await User.find({ accountType: "Instructor" })
+            .select("firstName lastName image profileImage additionalDetails")
+            .populate("additionalDetails", "about")
+            .lean()
+            .exec();
+
+        const results = await Promise.all(
+            instructors.map(async (inst) => {
+                const instCourses = await course
+                    .find({ instructor: inst._id })
+                    .select("ratingsAndReviews studentsEnrolled studentEnrolled")
+                    .populate({ path: "ratingsAndReviews", select: "rating" })
+                    .lean()
+                    .exec();
+
+                let ratingSum = 0;
+                let ratingCount = 0;
+                let studentTotal = 0;
+                for (const c of instCourses) {
+                    for (const r of c.ratingsAndReviews || []) {
+                        if (typeof r.rating === "number") {
+                            ratingSum += r.rating;
+                            ratingCount += 1;
+                        }
+                    }
+                    studentTotal += (c.studentsEnrolled?.length || 0) + (c.studentEnrolled?.length || 0);
+                }
+                const avgRating = ratingCount ? ratingSum / ratingCount : null;
+
+                return {
+                    _id: inst._id,
+                    firstName: inst.firstName,
+                    lastName: inst.lastName,
+                    image: inst.image || inst.profileImage,
+                    about: inst.additionalDetails?.about || "",
+                    courseCount: instCourses.length,
+                    studentCount: studentTotal,
+                    avgRating,
+                };
+            })
+        );
+
+        // Only instructors who've actually published at least one course,
+        // ranked by student count then rating.
+        const ranked = results
+            .filter((r) => r.courseCount > 0)
+            .sort((a, b) => (b.studentCount - a.studentCount) || ((b.avgRating || 0) - (a.avgRating || 0)))
+            .slice(0, 6);
+
+        return res.status(200).json({ success: true, data: ranked });
+    } catch (error) {
+        console.log("getTopInstructors error:", error.message);
+        return res.status(500).json({ success: false, message: "Error fetching instructors" });
+    }
+};

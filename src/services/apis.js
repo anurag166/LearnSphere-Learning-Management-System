@@ -39,3 +39,9 @@ export const courseEndpoints = {
   GET_ALL_REVIEWS: `${BASE_URL}course/getAllRatingAndReviews`,
   GET_AVERAGE_RATING: (id) => `${BASE_URL}course/getAverageRating/${id}`,
 };
+
+export const chatbotEndpoints = {
+  CHAT: `${BASE_URL}chatbot/chat`,
+  COURSE_CHAT: `${BASE_URL}chatbot/course-chat`,
+};
+

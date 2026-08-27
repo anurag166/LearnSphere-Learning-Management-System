@@ -25,7 +25,14 @@ export default function Login() {
         localStorage.setItem("user", JSON.stringify(data.user));
         setSuccess("Login successful! Redirecting...");
         setTimeout(() => {
-          navigate(data.user?.accountType === "Instructor" ? "/instructor-dashboard" : "/dashboard");
+          const type = data.user?.accountType;
+          navigate(
+            type === "Instructor"
+              ? "/instructor-dashboard"
+              : type === "Admin"
+              ? "/admin-dashboard"
+              : "/dashboard"
+          );
         }, 1000);
       } else {
         setError(data.message || "Invalid credentials. Please try again.");

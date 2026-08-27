@@ -116,7 +116,13 @@ export const getAllUserDetails = async(req , res)=>{
 
         const userDetails = await User.findById(id)
             .populate("additionalDetails")
-            .populate("courses");
+            .populate({
+                path: "courses",
+                populate: [
+                    { path: "instructor", select: "firstName lastName email" },
+                    { path: "courseContent", populate: { path: "subSection" } }
+                ]
+            });
 
         console.log("getAllUserDetails - userDetails found:", !!userDetails);
         

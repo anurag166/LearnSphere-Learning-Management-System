@@ -41,6 +41,12 @@ export const isInstructor = (req, res, next) => {
   if (req.user.accountType !== "Instructor") {
     throw new ApiError(403, "Access denied. Instructors only");
   }
+  if (req.user.instructorStatus !== "approved") {
+    throw new ApiError(
+      403,
+      "Your instructor account is still pending admin approval."
+    );
+  }
   next();
 };
 

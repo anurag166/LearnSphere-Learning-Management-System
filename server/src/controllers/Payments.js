@@ -45,22 +45,44 @@ export const capturePayment = async(req , res)=>{
         }
         
         //user already pay for samecourse
-        const uid = new mongoose.Types.ObjectId(userId);
         const enrolledStudents = courseData.studentEnrolled || courseData.studentsEnrolled || [];
-        if (Array.isArray(enrolledStudents) && enrolledStudents.includes(uid)){
+        const alreadyEnrolled = Array.isArray(enrolledStudents) &&
+            enrolledStudents.some((sid) => sid.toString() === userId.toString());
+        if (alreadyEnrolled){
             return res.status(400).json({
                 success: false,
                 message: 'You have already purchased this course'
             });
         }
-        
+
+        // Free courses (price 0) skip Razorpay entirely — Razorpay rejects
+        // zero-amount orders, so we enroll the student directly here instead.
+        if (Number(courseData.price) === 0) {
+            await course.findByIdAndUpdate(
+                actualCourseId,
+                { $addToSet: { studentEnrolled: userId } },
+                { new: true }
+            );
+            await User.findByIdAndUpdate(
+                userId,
+                { $addToSet: { courses: actualCourseId } },
+                { new: true }
+            );
+            return res.status(200).json({
+                success: true,
+                freeEnrollment: true,
+                message: 'Enrolled successfully in this free course',
+                courseName: courseData.courseName,
+            });
+        }
+
         //order create
         const amount = courseData.price;
         const currency = "INR";
         const options = {
             amount: amount*100,
             currency,
-            receipt: Math.random(Date.now()).toString(),
+            receipt: `receipt_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
             notes: {
                 courseId: actualCourseId,
                 userId,

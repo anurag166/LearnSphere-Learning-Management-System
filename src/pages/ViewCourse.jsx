@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import { API_BASE_URL } from "../services/apis";
+import { useChatbotContext } from "../context/ChatbotContext";
 
 export default function ViewCourse() {
   const { id } = useParams();
@@ -10,6 +11,14 @@ export default function ViewCourse() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeLectureId, setActiveLectureId] = useState("");
+
+  // Push course/lecture context into the global chatbot
+  const { setCourseContext, clearCourseContext } = useChatbotContext();
+
+  // Clear chatbot context when leaving this page
+  useEffect(() => {
+    return () => clearCourseContext();
+  }, [clearCourseContext]);
 
   useEffect(() => {
     loadCourse();
@@ -73,6 +82,18 @@ export default function ViewCourse() {
       setActiveLectureId(allLectures[0]._id || "");
     }
   }, [allLectures, activeLectureId]);
+
+  // Keep the global chatbot informed about the current course & lecture
+  useEffect(() => {
+    if (!course) return;
+    setCourseContext({
+      courseId: course._id || id,
+      courseTitle: course.courseName || "",
+      lectureId: activeLecture?._id || null,
+      lectureTitle: activeLecture?.title || null,
+      lectureDescription: activeLecture?.description || null,
+    });
+  }, [course, activeLecture, id, setCourseContext]);
 
   return (
     <>

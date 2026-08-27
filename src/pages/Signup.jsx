@@ -61,8 +61,12 @@ export default function Signup() {
         otp: otp.join(""),
       });
       if (data.success) {
-        setSuccess("Account created! Redirecting to login...");
-        setTimeout(() => navigate("/login"), 1500);
+        setSuccess(
+          role === "Instructor"
+            ? "Account created! Your instructor account is pending admin approval. Redirecting to login..."
+            : "Account created! Redirecting to login..."
+        );
+        setTimeout(() => navigate("/login"), role === "Instructor" ? 2500 : 1500);
       } else {
         setError(data.message || "Signup failed. Please try again.");
       }

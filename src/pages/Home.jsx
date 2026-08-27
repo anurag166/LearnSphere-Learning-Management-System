@@ -18,40 +18,21 @@ const GRADIENTS = [
 export default function Home() {
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [instructors, setInstructors] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [heroWordIndex, setHeroWordIndex] = useState(0);
-  const [studentCount, setStudentCount] = useState(0);
-  const [courseCount, setCourseCount] = useState(0);
-  const [ratingValue, setRatingValue] = useState(0);
+  const [stats, setStats] = useState({ totalStudents: 0, totalCourses: 0, avgRating: 0, ratingCount: 0 });
 
   useEffect(() => {
-    Promise.all([fetchCourses(), fetchCategories()]);
+    Promise.all([fetchCourses(), fetchCategories(), fetchStats(), fetchInstructors(), fetchTestimonials()]);
   }, []);
 
   useEffect(() => {
     const wordTimer = window.setInterval(() => {
       setHeroWordIndex((prev) => (prev + 1) % heroWords.length);
     }, 2800);
-
-    const duration = 900;
-    const startTime = performance.now();
-    let animationId;
-
-    const animate = (timestamp) => {
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      setStudentCount(Math.floor(12000 * progress));
-      setCourseCount(Math.max(1, Math.floor(220 * progress)));
-      setRatingValue(4.5 + 0.3 * progress);
-      if (progress < 1) {
-        animationId = window.requestAnimationFrame(animate);
-      }
-    };
-
-    animationId = window.requestAnimationFrame(animate);
-    return () => {
-      window.clearInterval(wordTimer);
-      window.cancelAnimationFrame(animationId);
-    };
+    return () => window.clearInterval(wordTimer);
   }, []);
 
   async function fetchCourses() {
@@ -59,9 +40,8 @@ export default function Home() {
       const res = await fetch(`${API_BASE_URL}/course/showAllCourses`);
       const data = await res.json();
       const courseList = Array.isArray(data.data) ? data.data : [];
-      if (data.success && courseList.length) { setCourses(courseList.slice(0, 6)); }
-      else setCourses(getDummy());
-    } catch { setCourses(getDummy()); }
+      setCourses(data.success ? courseList.slice(0, 6) : []);
+    } catch { setCourses([]); }
     setLoading(false);
   }
 
@@ -78,15 +58,32 @@ export default function Home() {
     } catch {}
   }
 
-  function getDummy() {
-    return [
-      {_id:"1",courseName:"Full Stack Web Development",price:999,instructor:{firstName:"Anurag",lastName:"Sharma"},studentsEnrolled:[...Array(312)]},
-      {_id:"2",courseName:"React & Node.js Masterclass",price:799,instructor:{firstName:"Priya",lastName:"Patel"},studentsEnrolled:[...Array(245)]},
-      {_id:"3",courseName:"Data Science with Python",price:1199,instructor:{firstName:"Raj",lastName:"Kumar"},studentsEnrolled:[...Array(189)]},
-      {_id:"4",courseName:"UI/UX Design Fundamentals",price:599,instructor:{firstName:"Sneha",lastName:"Gupta"},studentsEnrolled:[...Array(421)]},
-      {_id:"5",courseName:"DevOps & Cloud Computing",price:899,instructor:{firstName:"Vikram",lastName:"Singh"},studentsEnrolled:[...Array(156)]},
-      {_id:"6",courseName:"Machine Learning A-Z",price:1299,instructor:{firstName:"Anjali",lastName:"Rao"},studentsEnrolled:[...Array(278)]},
-    ];
+  async function fetchStats() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/course/platformStats`);
+      const data = await res.json();
+      if (data.success && data.data) setStats(data.data);
+    } catch {}
+  }
+
+  async function fetchInstructors() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/course/topInstructors`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) setInstructors(data.data);
+    } catch {}
+  }
+
+  async function fetchTestimonials() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/course/getAllRatingAndReviews`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        // Prefer the best-rated, most recent reviews for the homepage.
+        const sorted = [...data.data].sort((a, b) => (b.rating||0) - (a.rating||0));
+        setTestimonials(sorted.slice(0, 3));
+      }
+    } catch {}
   }
 
   const defaultCategories = [
@@ -126,29 +123,41 @@ export default function Home() {
                 <Link to="/signup" className={styles.btnOutline}>Become an Instructor →</Link>
               </div>
               <div className={`${styles.heroStats} fade-up delay-4`}>
-                <div className={styles.statItem}><div className={styles.statNum}>{studentCount.toLocaleString()}+</div><div className={styles.statLbl}>Students Enrolled</div></div>
-                <div className={styles.statItem}><div className={styles.statNum}>{courseCount}+</div><div className={styles.statLbl}>Expert Courses</div></div>
-                <div className={styles.statItem}><div className={styles.statNum}>{ratingValue.toFixed(1)}★</div><div className={styles.statLbl}>Avg. Rating</div></div>
+                <div className={styles.statItem}><div className={styles.statNum}>{stats.totalStudents.toLocaleString()}+</div><div className={styles.statLbl}>Students Enrolled</div></div>
+                <div className={styles.statItem}><div className={styles.statNum}>{stats.totalCourses}+</div><div className={styles.statLbl}>Expert Courses</div></div>
+                <div className={styles.statItem}><div className={styles.statNum}>{stats.ratingCount ? `${stats.avgRating.toFixed(1)}★` : "—"}</div><div className={styles.statLbl}>Avg. Rating</div></div>
               </div>
             </div>
             <div className={`${styles.heroVisual} fade-up delay-2`}>
               <div style={{position:"relative"}}>
-                <div className={styles.heroCardMain}>
-                  <div className={styles.coursePreviewImg}>⚡</div>
-                  <div className={styles.coursePreviewTitle}>Full-Stack Web Development</div>
-                  <div className={styles.coursePreviewMeta}>
-                    <span>By Anurag Sharma</span>
-                    <span className={styles.rating}>★★★★★ 4.9</span>
+                {courses[0] ? (
+                  <div className={styles.heroCardMain}>
+                    <div className={styles.coursePreviewImg}>⚡</div>
+                    <div className={styles.coursePreviewTitle}>{courses[0].courseName}</div>
+                    <div className={styles.coursePreviewMeta}>
+                      <span>By {courses[0].instructor ? `${courses[0].instructor.firstName||""} ${courses[0].instructor.lastName||""}`.trim() : "Instructor"}</span>
+                      {courses[0].ratingsAndReviews?.length > 0 && (
+                        <span className={styles.rating}>★ {(courses[0].ratingsAndReviews.reduce((s,r)=>s+(r.rating||0),0)/courses[0].ratingsAndReviews.length).toFixed(1)}</span>
+                      )}
+                    </div>
+                    <div className={styles.enrollBadge}>
+                      {(courses[0].studentsEnrolled?.length||0) + (courses[0].studentEnrolled?.length||0)} students enrolled
+                    </div>
                   </div>
-                  <div className={styles.enrollBadge}>🎯 48 students enrolled this week</div>
-                </div>
+                ) : (
+                  <div className={styles.heroCardMain}>
+                    <div className={styles.coursePreviewImg}>🎓</div>
+                    <div className={styles.coursePreviewTitle}>Your first course could be here</div>
+                    <div className={styles.coursePreviewMeta}><span>Instructors are publishing now</span></div>
+                  </div>
+                )}
                 <div className={`${styles.badgeFloat} ${styles.topRight}`}>
-                  <div className={styles.bfNum} style={{color:"var(--teal)"}}>98%</div>
-                  <div className={styles.bfLbl}>Completion rate</div>
+                  <div className={styles.bfNum} style={{color:"var(--teal)"}}>{stats.totalCourses}</div>
+                  <div className={styles.bfLbl}>Courses live</div>
                 </div>
                 <div className={`${styles.badgeFloat} ${styles.bottomLeft}`}>
-                  <div className={styles.bfNum} style={{color:"var(--gold)"}}>₹499</div>
-                  <div className={styles.bfLbl}>Avg. course price</div>
+                  <div className={styles.bfNum} style={{color:"var(--gold)"}}>{stats.totalStudents}</div>
+                  <div className={styles.bfLbl}>Students on LearnSphere</div>
                 </div>
               </div>
             </div>
@@ -168,12 +177,12 @@ export default function Home() {
               </div>
               <div className={styles.benefitStats}>
                 <div className={styles.statPanel}>
-                  <div className={styles.statNum}>4.9/5</div>
+                  <div className={styles.statNum}>{stats.ratingCount ? `${stats.avgRating.toFixed(1)}/5` : "No ratings yet"}</div>
                   <div className={styles.statLbl}>Average course rating</div>
                 </div>
                 <div className={styles.statPanel}>
-                  <div className={styles.statNum}>80%</div>
-                  <div className={styles.statLbl}>Learners upgrade skills in 6 weeks</div>
+                  <div className={styles.statNum}>{stats.totalEnrollments || 0}</div>
+                  <div className={styles.statLbl}>Total course enrollments</div>
                 </div>
               </div>
             </div>
@@ -201,14 +210,14 @@ export default function Home() {
             <div className={styles.sectionTag}>Browse by Topic</div>
             <div className={styles.sectionRow}>
               <h2 className={styles.sectionTitle}>Explore Categories</h2>
-              <a href="#" className={styles.viewAll}>View all →</a>
+              <Link to="/courses" className={styles.viewAll}>View all →</Link>
             </div>
             <div className={styles.catsGrid}>
               {displayCats.map((cat, i) => (
-                <div key={cat._id} className={styles.catCard}>
+                <Link key={cat._id} to={`/courses?category=${cat._id}`} className={styles.catCard}>
                   <span className={styles.catIcon}>{cat.icon || catIcons[i % catIcons.length]}</span>
                   <div className={styles.catName}>{cat.name}</div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -224,26 +233,34 @@ export default function Home() {
               </div>
               <Link to="/signup" className={styles.viewAll}>Become an instructor →</Link>
             </div>
-            <div className={styles.instructorGrid}>
-              {[
-                {name:"Neha Joshi", title:"Data Science Mentor", bio:"Teaches data analytics and ML projects with real-world case studies.", score:"98%"},
-                {name:"Anurag Sharma", title:"Full Stack Lead", bio:"Builds practical web apps and deployment-ready portfolios.", score:"95%"},
-                {name:"Priya Patel", title:"UI/UX Expert", bio:"Designs high-conversion interfaces with a learner-first process.", score:"92%"},
-              ].map((inst, idx) => (
-                <div key={idx} className={styles.instructorCard}>
-                  <div className={styles.instructorAvatar}>{inst.name.split(" ").map(w=>w[0]).join("")}</div>
-                  <div className={styles.instructorMeta}>
-                    <div className={styles.instructorName}>{inst.name}</div>
-                    <div className={styles.instructorTitle}>{inst.title}</div>
-                  </div>
-                  <p>{inst.bio}</p>
-                  <div className={styles.instructorFooter}>
-                    <span>Course quality</span>
-                    <strong>{inst.score}</strong>
-                  </div>
+            {instructors.length === 0 ? (
+              <div className={styles.instructorGrid}>
+                <div className={styles.instructorCard} style={{gridColumn:"1/-1", textAlign:"center", color:"var(--muted)"}}>
+                  No instructors have published courses yet. Be the first!
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className={styles.instructorGrid}>
+                {instructors.map((inst) => {
+                  const name = `${inst.firstName} ${inst.lastName}`.trim();
+                  const scoreLabel = inst.avgRating != null ? `${Math.round((inst.avgRating/5)*100)}%` : "New";
+                  return (
+                    <div key={inst._id} className={styles.instructorCard}>
+                      <div className={styles.instructorAvatar}>{name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+                      <div className={styles.instructorMeta}>
+                        <div className={styles.instructorName}>{name}</div>
+                        <div className={styles.instructorTitle}>{inst.courseCount} course{inst.courseCount===1?"":"s"} · {inst.studentCount} student{inst.studentCount===1?"":"s"}</div>
+                      </div>
+                      <p>{inst.about || "Building courses on LearnSphere."}</p>
+                      <div className={styles.instructorFooter}>
+                        <span>Course quality</span>
+                        <strong>{scoreLabel}</strong>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 
@@ -260,24 +277,28 @@ export default function Home() {
                 <div className="spinner" />
                 <p>Loading courses...</p>
               </div>
+            ) : courses.length === 0 ? (
+              <div style={{textAlign:"center",padding:"60px",color:"var(--muted)"}}>
+                No courses published yet — check back soon, or <Link to="/signup" style={{color:"var(--accent2)"}}>become an instructor</Link> and add the first one.
+              </div>
             ) : (
               <div className={styles.coursesGrid}>
                 {courses.map((c, i) => {
                   const instructor = c.instructor
                     ? `${c.instructor.firstName || ""} ${c.instructor.lastName || ""}`.trim()
                     : "Expert Instructor";
-                  const enrolled = c.studentsEnrolled?.length || 0;
+                  const enrolled = (c.studentsEnrolled?.length || 0) + (c.studentEnrolled?.length || 0);
                   return (
                     <Link to={`/courses/${c._id}`} key={c._id} className={styles.courseCard}>
-                      <div className={styles.courseThumb} style={{background: GRADIENTS[i % GRADIENTS.length]}}>
-                        {EMOJI_MAP[i % EMOJI_MAP.length]}
+                      <div className={styles.courseThumb} style={c.thumbnail ? {backgroundImage:`url(${c.thumbnail})`, backgroundSize:"cover", backgroundPosition:"center"} : {background: GRADIENTS[i % GRADIENTS.length]}}>
+                        {!c.thumbnail && EMOJI_MAP[i % EMOJI_MAP.length]}
                       </div>
                       <div className={styles.courseBody}>
-                        <div className={styles.courseCat}>Featured Course</div>
+                        <div className={styles.courseCat}>{c.category?.name || "Featured Course"}</div>
                         <div className={styles.courseTitle}>{c.courseName}</div>
                         <div className={styles.courseInstructor}>By {instructor}</div>
                         <div className={styles.courseFooter}>
-                          <div className={styles.coursePrice}>₹{c.price?.toLocaleString("en-IN") || "499"}</div>
+                          <div className={styles.coursePrice}>{c.price === 0 ? "Free" : `₹${c.price?.toLocaleString("en-IN")}`}</div>
                           <div className={styles.courseEnrolled}>{enrolled} enrolled</div>
                         </div>
                       </div>
@@ -314,22 +335,35 @@ export default function Home() {
           <div className={styles.sectionInner}>
             <div className={styles.sectionTag}>Student Stories</div>
             <h2 className={styles.sectionTitle}>What Our Students Say</h2>
-            <div className={styles.testiGrid}>
-              {[
-                {initials:"RK",color:"#7c5cfc",text:"I landed my first dev job 3 months after completing the Full Stack course. The content is incredibly practical.",name:"Rahul Kumar",role:"Frontend Developer",stars:5},
-                {initials:"PS",color:"#14b8a6",text:"Best EdTech platform I've used. The courses are affordable, the quality is outstanding, and support is super responsive.",name:"Priya Sharma",role:"Data Analyst",stars:5},
-                {initials:"AM",color:"#f59e0b",text:"As an instructor, I can create and manage my courses effortlessly. The platform handles payments and enrollments beautifully.",name:"Amit Mishra",role:"Course Instructor",stars:4},
-              ].map((t,i) => (
-                <div key={i} className={styles.testiCard}>
-                  <div className={styles.stars}>{"★".repeat(t.stars)}{"☆".repeat(5-t.stars)}</div>
-                  <p className={styles.testiText}>"{t.text}"</p>
-                  <div className={styles.testiAuthor}>
-                    <div className={styles.testiAvatar} style={{background:t.color}}>{t.initials}</div>
-                    <div><div className={styles.testiName}>{t.name}</div><div className={styles.testiRole}>{t.role}</div></div>
-                  </div>
+            {testimonials.length === 0 ? (
+              <div className={styles.testiGrid}>
+                <div className={styles.testiCard} style={{gridColumn:"1/-1", textAlign:"center", color:"var(--muted)"}}>
+                  No student reviews yet. Once learners rate courses, their stories will appear here.
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className={styles.testiGrid}>
+                {testimonials.map((t) => {
+                  const name = t.user ? `${t.user.firstName} ${t.user.lastName||""}`.trim() : "Student";
+                  const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+                  const stars = t.rating || 0;
+                  return (
+                    <div key={t._id} className={styles.testiCard}>
+                      <div className={styles.stars}>{"★".repeat(stars)}{"☆".repeat(5-stars)}</div>
+                      <p className={styles.testiText}>"{t.review}"</p>
+                      <div className={styles.testiAuthor}>
+                        <div className={styles.testiAvatar} style={{background:"#7c5cfc", padding: t.user?.profileImage ? 0 : undefined, overflow: "hidden"}}>
+                          {t.user?.profileImage ? (
+                            <img src={t.user.profileImage} alt="Student" style={{width:"100%", height:"100%", objectFit:"cover"}} />
+                          ) : initials}
+                        </div>
+                        <div><div className={styles.testiName}>{name}</div><div className={styles.testiRole}>{t.course?.courseName || "LearnSphere student"}</div></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 

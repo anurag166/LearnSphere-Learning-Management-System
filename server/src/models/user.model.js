@@ -28,6 +28,11 @@ const userSchema = new Schema ({
         required: true,
         enum: ['Student','Instructor','Admin']
     },
+    instructorStatus: {
+        type: String,
+        enum: ['none', 'pending', 'approved'],
+        default: 'none'
+    },
     additionalDetails:{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
