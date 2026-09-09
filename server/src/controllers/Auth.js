@@ -35,7 +35,11 @@ export const sendOTP = async (req, res) => {
     // Create OTP entry in DB
     const otpBody = await otp.create(otpPayload);
     console.log("OTP entry saved:", otpBody);
-
+    await mailSender(
+  normalizedEmail,
+  "Your OTP Verification Code",
+  `Your OTP is ${otpCode}. It will expire in 10 minutes.`
+);
     res.status(200).json({
       success: true,
       message: "OTP sent successfully",
