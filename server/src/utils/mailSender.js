@@ -1,18 +1,24 @@
-import { ApiError } from './ApiErrors.js'
-import nodemailer from 'nodemailer'
-import dotenv from 'dotenv'
+import { ApiError } from "./ApiErrors.js";
+import { google } from "googleapis";
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 const FROM =
-    process.env.MAIL_FROM ||
-    process.env.GMAIL_USER ||
-    'LearnSphere <no-reply@learnsphere.app>'
+  process.env.MAIL_FROM ||
+  process.env.GMAIL_USER ||
+  "LearnSphere <no-reply@learnsphere.app>";
+
+
+// --------------------------------------------------
+// Build HTML Email
+// --------------------------------------------------
 
 const buildHtml = (title, body) => `
 <div style="margin:0; padding:32px 16px; background-color:#f4f5f7; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; margin:0 auto; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+    style="max-width:480px; margin:0 auto; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
 
     <tr>
       <td style="background-color:#1a1a2e; padding:24px 32px; text-align:center;">
@@ -24,6 +30,7 @@ const buildHtml = (title, body) => `
 
     <tr>
       <td style="padding:32px;">
+
         <h2 style="margin:0 0 16px; font-size:20px; color:#1a1a2e;">
           ${title}
         </h2>
@@ -41,6 +48,7 @@ const buildHtml = (title, body) => `
         <p style="margin:0; font-size:13px; color:#999999; line-height:1.5;">
           This code expires shortly. If you didn't request this, you can safely ignore this email.
         </p>
+
       </td>
     </tr>
 
@@ -53,92 +61,169 @@ const buildHtml = (title, body) => `
     </tr>
 
   </table>
+
 </div>
-`
+`;
+
+
+// --------------------------------------------------
+// Gmail OAuth2 Client
+// --------------------------------------------------
+
+const requiredVars = [
+  "GMAIL_USER",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "GOOGLE_REFRESH_TOKEN",
+];
+
+const missingVars = requiredVars.filter(
+  (key) => !process.env[key]
+);
+
+if (missingVars.length > 0) {
+  console.error(
+    `Missing Gmail OAuth configuration: ${missingVars.join(", ")}`
+  );
+}
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET
+);
+
+oauth2Client.setCredentials({
+  refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+});
+
+const gmail = google.gmail({
+  version: "v1",
+  auth: oauth2Client,
+});
+
+
+// --------------------------------------------------
+// Convert email to Base64URL
+// --------------------------------------------------
+
+const makeRawMessage = ({
+  from,
+  to,
+  subject,
+  html,
+}) => {
+
+  const message = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    "Content-Type: text/html; charset=UTF-8",
+    "Content-Transfer-Encoding: 7bit",
+    "",
+    html,
+  ].join("\r\n");
+
+  return Buffer.from(message)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+};
+
+
+// --------------------------------------------------
+// Send Email Using Gmail API
+// --------------------------------------------------
 
 const sendViaGmail = async (email, title, body) => {
 
-    const requiredVars = [
-        'GMAIL_USER',
-        'GOOGLE_CLIENT_ID',
-        'GOOGLE_CLIENT_SECRET',
-        'GOOGLE_REFRESH_TOKEN'
-    ]
+  if (missingVars.length > 0) {
+    throw new ApiError(
+      500,
+      `Missing Gmail OAuth configuration: ${missingVars.join(", ")}`
+    );
+  }
 
-    const missingVars = requiredVars.filter(
-        (key) => !process.env[key]
-    )
+  console.log("Attempting Gmail API email:", {
+    from: FROM,
+    to: email,
+  });
 
-    if (missingVars.length > 0) {
-        throw new ApiError(
-            500,
-            `Missing Gmail OAuth configuration: ${missingVars.join(', ')}`
-        )
-    }
+  const html = buildHtml(title, body);
 
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
+  const raw = makeRawMessage({
+    from: FROM,
+    to: email,
+    subject: title,
+    html,
+  });
 
-        auth: {
-            type: 'OAuth2',
-            user: process.env.GMAIL_USER,
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-        }
-    })
+  const response = await gmail.users.messages.send({
+    userId: "me",
+    requestBody: {
+      raw,
+    },
+  });
 
-    console.log('Attempting Gmail OAuth2 email:', {
-        from: FROM,
-        to: email,
-    })
+  console.log("Gmail API email sent successfully:", {
+    messageId: response.data.id,
+    threadId: response.data.threadId,
+  });
 
-    const info = await transporter.sendMail({
-        from: FROM,
-        to: email,
-        subject: title,
-        html: buildHtml(title, body),
-    })
+  return response.data;
+};
 
-    console.log('Gmail send info:', {
-        messageId: info.messageId,
-        response: info.response,
-    })
 
-    return info
-}
+// --------------------------------------------------
+// Main Mail Sender
+// --------------------------------------------------
 
 const mailSender = async (email, title, body) => {
 
-    try {
+  try {
 
-        console.log('Using mail service: Gmail OAuth2')
+    console.log("Using mail service: Gmail API");
 
-        return await sendViaGmail(
-            email,
-            title,
-            body
-        )
+    return await sendViaGmail(
+      email,
+      title,
+      body
+    );
 
-    } catch (error) {
+  } catch (error) {
 
-        console.error('MAIL SENDER ERROR:', error)
+    console.error(
+      "GMAIL API ERROR:",
+      error?.response?.data || error
+    );
 
-        if (
-            error?.code === 'EAUTH' ||
-            error?.responseCode === 535
-        ) {
-            throw new ApiError(
-                500,
-                'Gmail authentication failed. Check Gmail OAuth2 credentials and refresh token.'
-            )
-        }
-
-        throw new ApiError(
-            500,
-            error?.message || 'Failed to send mail'
-        )
+    if (
+      error?.code === 401 ||
+      error?.response?.status === 401
+    ) {
+      throw new ApiError(
+        500,
+        "Gmail authentication failed. Check your OAuth2 credentials and refresh token."
+      );
     }
-}
 
-export { mailSender }
+    if (
+      error?.code === 403 ||
+      error?.response?.status === 403
+    ) {
+      throw new ApiError(
+        500,
+        "Gmail API permission denied. Check Gmail API, OAuth scope, and authorized account."
+      );
+    }
+
+    throw new ApiError(
+      500,
+      error?.message || "Failed to send mail"
+    );
+  }
+};
+
+
+export { mailSender };
